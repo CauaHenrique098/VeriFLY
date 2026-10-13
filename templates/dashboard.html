@@ -1,52 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <link rel="stylesheet" href="../static/css/variables.css">
-        <link rel="stylesheet" href="../static/css/components/menu.css">
+    <link rel="stylesheet" href="../static/css/variables.css">
+    <link rel="stylesheet" href="../static/css/pages/dasboard.css">
+    <link rel="stylesheet" href="../static/css/components/menu.css">
 
-        <title>Verifly - dashboard</title>
-    </head>
+    <title>Verifly - dashboard</title>
+</head>
 
-    <body>
-        <div id="app-container">
+<body>
+    <div id="app-container">
 
-            <div id="left-menu">
-                <img src="../static/images/logo_verifly_bg_blue.jpg" class="main-logo">
-                <nav>
-                    <a href="#" class="active"><img src="">Dashboard</a>
-                    <a href="#"><img src=""> Nova Reserva</a>
-                    <a href="#"><img src=""> Histórico</a>
-                </nav>
-            </div>
-
-            <div id="top-menu">
-                <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
-
-                <div class="navbar-search">
-                    <input type="text" placeholder="Pesquisar cliente ou reserva...">
-                    <img src="">
-                </div>
-
-                <div class="navbar-actions">
-                    <p style="font-size: 15px;">Usuário: Administrador</p>
-                    <img src="">
-                    <div>
-                        <button><img src="">SAIR</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Menu da página está acima -->
-
-            <main id="page-content">
-                <!-- O conteúdo principal deve ser desenvolvido aqui -->
-            </main>
+        <div id="left-menu">
+            <img src="../static/images/logo_verifly_bg_blue.jpg" class="main-logo">
+            <nav>
+                <a href="#" class="active"><img src="">Dashboard</a>
+                <a href="#"><img src=""> Nova Reserva</a>
+                <a href="#"><img src=""> Histórico</a>
+            </nav>
         </div>
 
-    </body>
+        <div id="top-menu">
+            <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
+
+            <div class="navbar-search">
+                <input type="text" placeholder="Pesquisar cliente ou reserva...">
+                <img src="">
+            </div>
+
+            <div class="navbar-actions">
+                <p style="font-size: 15px;">Usuário: Administrador</p>
+                <img src="">
+                <div>
+                    <button><img src="">SAIR</button>
+                </div>
+            </div>
+        </div>
+
+        <main id="page-content">
+
+            <div class="cards-area">
+
+                <a href="#">
+                    <div class="card high-priority-card">
+                        <div class="card-header">
+                            <span>AÇÃO NECESSÁRIA — ALTA PRIORIDADE</span>
+                            <i class="icon-warning">⚠️</i>
+                        </div>
+                        <div class="card-value">1</div>
+                        <div class="card-footer">Embarque em até 60 dias</div>
+                    </div>
+                </a>
+
+                <a href="#">
+                    <div class="card low-priority-card">
+                        <div class="card-header">
+                            <span>ALTERAÇÕES — BAIXA PRIORIDADE</span>
+                            <i class="icon-clock">🕒</i>
+                        </div>
+                        <div class="card-value">1</div>
+                        <div class="card-footer">Embarque em mais de 60 dias</div>
+                    </div>
+                </a>
+
+                <a href="#">
+                    <div class="card confirmed-flights-card">
+                        <div class="card-header">
+                            <span>VOOS CONFIRMADOS</span>
+                            <i class="icon-check">✅</i>
+                        </div>
+                        <div class="card-value">1</div>
+                        <div class="card-footer">Sem alteração de horário</div>
+                    </div>
+                </a>
+
+                <a href="#">
+                    <div class="card solved-flights-card">
+                        <div class="card-header">
+                            <span>VOOS RESOLVIDOS</span>
+                            <i class="icon-shield">🛡️</i>
+                        </div>
+                        <div class="card-value">1</div>
+                        <div class="card-footer">REACOMODAÇÃO CONCLUÍDA</div>
+                    </div>
+                </a>
+
+                <a href="#">
+                    <div class="card completed-flights-card">
+                        <div class="card-header">
+                            <span>VOOS REALIZADOS</span>
+                            <i class="icon-plane">✈️</i>
+                        </div>
+                        <div class="card-value">0</div>
+                        <div class="card-footer">Embarque já ocorrido — arquivo</div>
+                    </div>
+                </a>
+
+            </div>
+
+
+
+
+
+
+
+
+        </main>
+    </div>
+
+</body>
 
 </html>
