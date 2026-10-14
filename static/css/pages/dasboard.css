@@ -98,7 +98,7 @@
             color: #718096;
             font-size: 12px;
             font-weight: 600;
-            text-align: left;
+            text-align: center;
             padding-bottom: 12px;
             border-bottom: 2px solid #E2E8F0;
         }
@@ -106,6 +106,13 @@
         td {
             padding: 16px 0;
             font-size: 14px;
+            text-align: center;
+
+            &.dot {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
         }
 
         .status-dot {
