@@ -122,7 +122,7 @@ body {
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: #64748b;
+    color: #516b85;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -147,6 +147,10 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+
+    p{
+        font-size: 12px;
+    }
 }
 
 .cf-check input[type="checkbox"] {
