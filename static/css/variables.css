@@ -10,4 +10,19 @@
     
     --color-white: #F8F9FA;
     --color-blue-texts: #0F1D32;
+
+    --background: #f2f2f7;
+    --text: #101b2f;
+    --text-muted: #8a93a0;
+    --green: #68b968;
+    --red: #d64550;
+    --dark-blue: #54667f;
+    --dark: #101b2f;
+    --folder-gray: #939ca8;
+    --border: #e6e8ec;
+    --airline-blue: #3d7bd6;
+    --latam: #6a1fc9;
+    --gol: #d9661a;
+    --text-ok: #2f8a3a;
+    --text-error: #d64550;
 }
