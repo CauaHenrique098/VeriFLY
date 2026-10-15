@@ -7,15 +7,15 @@
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        <link rel="stylesheet" href="../static/css/variables.css">
         <link rel="stylesheet" href="../static/css/components/menu.css">
+        <link rel="stylesheet" href="../static/css/variables.css">
         <link rel="stylesheet" href="../static/css/pages/history.css">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        <title>Verifly - dashboard</title>
+        <title>Verifly - Histórico de verificações</title>
     </head>
 
     <body>
@@ -47,15 +47,13 @@
                 </div>
             </div>
 
-            <main id="page-content">
+            <main id="page-content" class="container py-4">
 
-                <div class="container panel py-4">
-
-                    <section class="row g-3 mb-4" aria-label="Resumo">
+                    <section id="cards-sumary-container" class="row g-3 mb-4" aria-label="Resumo">
                         <div class="col-6 col-lg-3">
                             <div class="summary summary-green">
                                 <div class="summary-top">
-                                    <span class="summary-title">Verificado</span>
+                                    <span class="summary-title">VERIFICADO</span>
                                     <i class="bi bi-check-lg summary-icon"></i>
                                 </div>
                                 <div class="summary-number">1</div>
@@ -65,7 +63,7 @@
                         <div class="col-6 col-lg-3">
                             <div class="summary summary-red">
                                 <div class="summary-top">
-                                    <span class="summary-title">Erro</span>
+                                    <span class="summary-title">ERRO</span>
                                     <i class="bi bi-exclamation-triangle summary-icon"></i>
                                 </div>
                                 <div class="summary-number">1</div>
@@ -75,7 +73,7 @@
                         <div class="col-6 col-lg-3">
                             <div class="summary summary-blue">
                                 <div class="summary-top">
-                                    <span class="summary-title">Voos realizados</span>
+                                    <span class="summary-title">VOOS REALIZADOS</span>
                                     <i class="bi bi-airplane summary-icon"></i>
                                 </div>
                                 <div class="summary-number">1</div>
@@ -84,12 +82,12 @@
 
                         <div class="col-6 col-lg-3">
                             <div class="summary summary-dark">
-                                <span class="checking">Verificando <span class="dot" aria-hidden="true"></span></span>
+                                <span class="checking-status">VERIFICANDO <span class="dot" aria-hidden="true"></span></span>
                             </div>
                         </div>
                     </section>
 
-                    <section class="history" aria-labelledby="history-heading">
+                    <section id="history-container" aria-labelledby="history-heading">
 
                         <header class="history-top">
                             <h1 class="history-title" id="history-heading">
@@ -104,7 +102,7 @@
                         </header>
 
                         <div class="table-header">
-                            <span class="col-passenger">Passageiro / Reserva</span>
+                            <span class="col-passenger">Passageiro | Reserva</span>
                             <span>Companhia</span>
                             <span>Status</span>
                             <span>Data e hora</span>
@@ -258,7 +256,6 @@
 
 
                     </section>
-                </div>
             </main>
         </div>
 
