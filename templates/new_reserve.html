@@ -13,6 +13,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <link rel="icon" type="image/x-icon" href="../static/images/favicon.ico">
+    
     <title>Verifly - Nova reserva</title>
 </head>
 
@@ -80,23 +82,22 @@
                         <div class="segment">
                             <div class="segment-top">
                                 <span class="segment-tag">TRECHO 1</span>
-                                <button type="button" class="btn-remove-segment" aria-label="Remover trecho" hidden>&times;</button>
                             </div>
 
                             <div class="segment-row segment-row-flight">
                                 <div class="form-group">
                                     <label>ORIGEM</label>
-                                    <input type="text" name="origin[]" placeholder="CNF" maxlength="3" required>
+                                    <input type="text" name="origin" placeholder="CNF" maxlength="3" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label>DESTINO</label>
-                                    <input type="text" name="destination[]" placeholder="MCZ" maxlength="3" required>
+                                    <input type="text" name="destination" placeholder="MCZ" maxlength="3" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label>TIPO</label>
-                                    <select name="type[]" required>
+                                    <select name="type" required>
                                         <option value="" selected disabled>Selecione</option>
                                         <option value="domestic">Doméstico</option>
                                         <option value="international">Internacional</option>
@@ -105,19 +106,19 @@
 
                                 <div class="form-group">
                                     <label>PARTIDA ORIGINAL</label>
-                                    <input type="date" name="departure_date[]" required>
+                                    <input type="date" name="departure_date" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label>CHEGADA ORIGINAL</label>
-                                    <input type="date" name="arrival_date[]" required>
+                                    <input type="date" name="arrival_date" required>
                                 </div>
                             </div>
 
                             <div class="segment-row segment-row-airline">
                                 <div class="form-group">
                                     <label>COMPANHIA AÉREA</label>
-                                    <select name="airline[]" required>
+                                    <select name="airline" required>
                                         <option value="" selected disabled>SELECIONE</option>
                                         <option value="azul">Azul</option>
                                         <option value="latam">LATAM</option>
@@ -127,12 +128,12 @@
 
                                 <div class="form-group">
                                     <label>LOCALIZADOR DE VOO</label>
-                                    <input type="text" name="flight_locator[]" placeholder="ABC123D" required>
+                                    <input type="text" name="flight_locator" placeholder="ABC123D" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label>URL DA RESERVA</label>
-                                    <input type="url" name="reserve_url[]" placeholder="https://companhia.com.br/reserva/ABC123D">
+                                    <input type="url" name="reserve_url" placeholder="https://companhia.com.br/reserva/ABC123D">
                                 </div>
                             </div>
                         </div>

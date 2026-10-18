@@ -137,19 +137,6 @@
                 border-radius: 4px;
             }
 
-            .btn-remove-segment {
-                background: transparent;
-                border: none;
-                font-size: 20px;
-                line-height: 1;
-                color: #718096;
-                cursor: pointer;
-
-                &:hover {
-                    color: #E53E3E;
-                }
-            }
-
             .segment-row {
                 display: grid;
                 gap: 14px;
