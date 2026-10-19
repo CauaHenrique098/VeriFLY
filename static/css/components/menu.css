@@ -1,7 +1,7 @@
 * {
     padding: 0;
     margin: 0;
-    
+
     font-family: Arial, Helvetica, sans-serif;
 
     box-sizing: border-box;
@@ -13,7 +13,7 @@
     grid-template-rows: 3rem 1fr;
 
     min-height: 100vh;
-    
+
     background-color: var(--color-white);
 
     #left-menu {
@@ -23,13 +23,13 @@
         padding-top: 20px;
         grid-column: 1;
         grid-row: 1 / span 2;
-        
+
         .main-logo {
             width: 150px;
             display: block;
             margin: 0 auto 30px auto;
         }
-    
+
         nav {
             a {
                 display: flex;
@@ -38,13 +38,15 @@
                 font-size: 20px;
                 color: var(--color-white);
                 text-decoration: none;
+                height: 60px;
             }
-        
+
             a img {
                 width: 20px;
+                height: 20px;
                 margin: 0 15px 0 0;
             }
-                
+
             .active {
                 background-color: rgba(255, 255, 255, 0.082);
                 color: var(--color-white);
@@ -56,12 +58,12 @@
             }
         }
     }
-    
-    
+
+
     #top-menu {
         display: flex;
         justify-content: space-between;
-        
+
         align-items: center;
         background-color: var(--color-dark-blue);
         padding: 0 30px;
@@ -74,20 +76,25 @@
         p {
             font-size: 20px;
             font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin-bottom: 0px;
+            display: flex;
+            justify-content: center;
         }
-        
+
         .navbar-search {
             display: flex;
             background-color: var(--color-white);
             border-radius: 4px;
             padding: 5px 10px;
             width: 25rem;
-            
+            font-family: Arial, Helvetica, sans-serif;
+
             input {
                 border: none;
                 outline: none;
                 width: 100%;
-            }    
+                font-size: 14px;
+            }
         }
 
         .navbar-actions {
@@ -100,15 +107,22 @@
                 border: none;
                 cursor: pointer;
                 color: inherit;
+                width: 25px;
+                height: 25px;
+
+                img {
+                    display: flex;
+                    justify-content: center;
+                }
             }
 
-            div{
+            div {
                 border: var(--color-dark-gray) solid 1px;
                 display: flex;
                 align-items: center;
                 gap: 5px;
             }
-            
+
             nav {
                 .logout-btn {
                     border: 1px solid var(--color-white);
@@ -117,9 +131,9 @@
                     font-size: 12px;
                 }
             }
-        } 
+        }
 
-        
+
     }
 
     /* Estilos do menu estão acima */
