@@ -15,7 +15,7 @@
         flex: 1;
         border-radius: 12px;
         padding: 20px;
-        color: #ffffff;
+        color: var(--color-white);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
@@ -48,23 +48,23 @@
     }
 
     .high-priority-card {
-        background-color: #F0444D;
+        background-color: var(--color-red);
     }
 
     .low-priority-card {
-        background-color: #F5B82E;
+        background-color: var(--color-yellow);
     }
 
     .confirmed-flights-card {
-        background-color: #2FBA68;
+        background-color: var(--color-green);
     }
 
     .solved-flights-card {
-        background-color: #20A9D6;
+        background-color: var(--color-light-blue);
     }
 
     .completed-flights-card {
-        background-color: #4D667F;
+        background-color: var(--color-dark-gray);
     }
 
 }
@@ -86,7 +86,7 @@
     h3 {
         margin: 0;
         font-family: sans-serif;
-        color: #1A202C;
+        color: var(--text);
         font-size: 18px;
     }
 
@@ -122,22 +122,22 @@
             border-radius: 50%;
 
             &.red {
-                background-color: #E53E3E;
+                background-color: var(--color-red);
             }
 
             &.yellow {
-                background-color: #ECC94B;
+                background-color: var(--color-yellow);
             }
 
             &.green {
-                background-color: #38A169;
+                background-color: var(--color-green);
             }
         }
 
         .client-name {
             display: block;
             font-weight: 600;
-            color: #2D3748;
+            color: var(--text);
         }
 
         .client-pnr {
@@ -149,8 +149,8 @@
 
         .btn-details {
             background-color: transparent;
-            border: 1px solid #107ACF;
-            color: #107ACF;
+            border: 1px solid var(--color-light-blue);
+            color: var(--color-light-blue);
             padding: 6px 12px;
             border-radius: 6px;
             font-size: 12px;
