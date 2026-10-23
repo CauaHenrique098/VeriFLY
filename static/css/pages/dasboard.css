@@ -1,212 +1,215 @@
-.cards-area {
-    display: flex;
-    gap: 21px;
-    width: 100%;
-    max-width: 1200px;
-    margin: 50px auto;
+#page-content {
 
-    a {
-        text-decoration: none;
-    }
-
-    .card {
-        width: 225px;
-        height: 170px;
-        flex: 1;
-        border-radius: 12px;
-        padding: 20px;
-        color: var(--color-white);
+    .cards-area {
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        opacity: 0.9;
-
-        span {
-            max-width: 80%;
-        }
-    }
-
-    .card-value {
-        font-size: 42px;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    .card-footer {
-        font-size: 12px;
-        font-weight: 500;
-        opacity: 0.85;
-    }
-
-    .high-priority-card {
-        background-color: var(--color-red);
-    }
-
-    .low-priority-card {
-        background-color: var(--color-yellow);
-    }
-
-    .confirmed-flights-card {
-        background-color: var(--color-green);
-    }
-
-    .solved-flights-card {
-        background-color: var(--color-light-blue);
-    }
-
-    .completed-flights-card {
-        background-color: var(--color-dark-gray);
-    }
-
-}
-
-.monitoring-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 21px;
-    width: 100%;
-    max-width: 1210px;
-    height: 485px;
-    margin: 50px auto;
-    background-color: #ffffff;
-    border: 2px solid #EBF0F4;
-    border-radius: 12px;
-    padding: 24px;
-    box-sizing: border-box;
-
-    h3 {
-        margin: 0;
-        font-family: sans-serif;
-        color: var(--text);
-        font-size: 18px;
-    }
-
-    .monitoring-table {
+        gap: 21px;
         width: 100%;
-        border-collapse: collapse;
+        max-width: 1200px;
+        margin: 50px auto;
 
-        th {
-            color: #718096;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #E2E8F0;
+        a {
+            text-decoration: none;
         }
 
-        td {
-            padding: 16px 0;
-            font-size: 14px;
-            text-align: center;
-
-            &.dot {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
+        .card {
+            width: 225px;
+            height: 170px;
+            flex: 1;
+            border-radius: 12px;
+            padding: 20px;
+            color: var(--color-white);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .status-dot {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-
-            &.red {
-                background-color: var(--color-red);
-            }
-
-            &.yellow {
-                background-color: var(--color-yellow);
-            }
-
-            &.green {
-                background-color: var(--color-green);
-            }
-        }
-
-        .client-name {
-            display: block;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .client-pnr {
-            display: block;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
             font-size: 11px;
-            color: #A0AEC0;
-            margin-top: 2px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+
+            span {
+                max-width: 80%;
+            }
         }
 
-        .btn-details {
-            background-color: transparent;
-            border: 1px solid var(--color-light-blue);
-            color: var(--color-light-blue);
-            padding: 6px 12px;
-            border-radius: 6px;
+        .card-value {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .card-footer {
             font-size: 12px;
             font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            &:hover {
-                background-color: #F7FAFC;
-                border-color: #A0AEC0;
-            }
+            opacity: 0.85;
         }
 
-        .actions-cell {
-            display: flex;
-            gap: 8px;
+        .high-priority-card {
+            background-color: var(--color-red);
         }
 
-        .btn-postpone {
-            background-color: #ECC94B;
-            border: none;
-            color: black;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-
-            &:hover {
-                background-color: #D69E2E;
-            }
+        .low-priority-card {
+            background-color: var(--color-yellow);
         }
 
-        .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-
-            &.badge-red {
-                background-color: #FFF5F5;
-                color: #E53E3E;
-            }
-
-            &.badge-yellow {
-                background-color: #FEFCBF;
-                color: #B7791F;
-            }
-
-            &.badge-green {
-                background-color: #F0FFF4;
-                color: #38A169;
-            }
+        .confirmed-flights-card {
+            background-color: var(--color-green);
         }
 
+        .solved-flights-card {
+            background-color: var(--color-light-blue);
+        }
+
+        .completed-flights-card {
+            background-color: var(--color-dark-gray);
+        }
+
+    }
+
+    .monitoring-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 21px;
+        width: 100%;
+        max-width: 1210px;
+        height: 485px;
+        margin: 50px auto;
+        background-color: #ffffff;
+        border: 2px solid #EBF0F4;
+        border-radius: 12px;
+        padding: 24px;
+        box-sizing: border-box;
+
+        h3 {
+            margin: 0;
+            font-family: sans-serif;
+            color: var(--text);
+            font-size: 18px;
+        }
+
+        .monitoring-table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th {
+                color: #718096;
+                font-size: 12px;
+                font-weight: 600;
+                text-align: center;
+                padding-bottom: 12px;
+                border-bottom: 2px solid #E2E8F0;
+            }
+
+            td {
+                padding: 16px 0;
+                font-size: 14px;
+                text-align: center;
+
+                &.dot {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+            }
+
+            .status-dot {
+                display: inline-block;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+
+                &.red {
+                    background-color: var(--color-red);
+                }
+
+                &.yellow {
+                    background-color: var(--color-yellow);
+                }
+
+                &.green {
+                    background-color: var(--color-green);
+                }
+            }
+
+            .client-name {
+                display: block;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+            .client-pnr {
+                display: block;
+                font-size: 11px;
+                color: #A0AEC0;
+                margin-top: 2px;
+            }
+
+            .btn-details {
+                background-color: transparent;
+                border: 1px solid var(--color-light-blue);
+                color: var(--color-light-blue);
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: #F7FAFC;
+                    border-color: #A0AEC0;
+                }
+            }
+
+            .actions-cell {
+                display: flex;
+                gap: 8px;
+            }
+
+            .btn-postpone {
+                background-color: #ECC94B;
+                border: none;
+                color: black;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+
+                &:hover {
+                    background-color: #D69E2E;
+                }
+            }
+
+            .badge {
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+                display: inline-block;
+
+                &.badge-red {
+                    background-color: #FFF5F5;
+                    color: #E53E3E;
+                }
+
+                &.badge-yellow {
+                    background-color: #FEFCBF;
+                    color: #B7791F;
+                }
+
+                &.badge-green {
+                    background-color: #F0FFF4;
+                    color: #38A169;
+                }
+            }
+
+        }
     }
 }
