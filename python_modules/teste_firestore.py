@@ -1,9 +1,9 @@
 from firebase_db import db
 
-doc_ref = db.collection("teste2").document("primeiro")
+doc_ref = db.collection("teste3").document("primeiro")
 
 doc_ref.set({
-    "nome": "João da Silva",
+    "nome": "Ricardo",
     "codigoReserva": "RES123456",
     "telefone": "34999999999",
     "pasta": "0042"
