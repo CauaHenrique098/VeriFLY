@@ -49,57 +49,57 @@
 
             <div class="cards-area">
 
-                <a href="#">
+                <a href="#" data-filter="high_priority">
                     <div class="card high-priority-card">
                         <div class="card-header">
                             <span>AÇÃO NECESSÁRIA — ALTA PRIORIDADE</span>
                             <img src="../static/images/warning.png">
                         </div>
-                        <div class="card-value">0</div>
+                        <div class="card-value" data-count="high_priority">0</div>
                         <div class="card-footer">Embarque em até 60 dias</div>
                     </div>
                 </a>
 
-                <a href="#">
+                <a href="#" data-filter="low_priority">
                     <div class="card low-priority-card">
                         <div class="card-header">
                             <span>ALTERAÇÕES — BAIXA PRIORIDADE</span>
                             <img src="../static/images/clock.png">
                         </div>
-                        <div class="card-value">0</div>
+                        <div class="card-value" data-count="low_priority">0</div>
                         <div class="card-footer">Embarque em mais de 60 dias</div>
                     </div>
                 </a>
 
-                <a href="#">
+                <a href="#" data-filter="confirmed">
                     <div class="card confirmed-flights-card">
                         <div class="card-header">
                             <span>VOOS CONFIRMADOS</span>
                             <img src="../static/images/marker.png">
                         </div>
-                        <div class="card-value">0</div>
+                        <div class="card-value" data-count="confirmed">0</div>
                         <div class="card-footer">Sem alteração de horário</div>
                     </div>
                 </a>
 
-                <a href="#">
+                <a href="#" data-filter="solved">
                     <div class="card solved-flights-card">
                         <div class="card-header">
                             <span>VOOS RESOLVIDOS</span>
                             <img src="../static/images/shield.png">
                         </div>
-                        <div class="card-value">0</div>
+                        <div class="card-value" data-count="solved">0</div>
                         <div class="card-footer">Reacomodação Concluída</div>
                     </div>
                 </a>
 
-                <a href="#">
+                <a href="#" data-filter="completed">
                     <div class="card completed-flights-card">
                         <div class="card-header">
                             <span>VOOS REALIZADOS</span>
                             <img src="../static/images/plane.png">
                         </div>
-                        <div class="card-value">0</div>
+                        <div class="card-value" data-count="completed">0</div>
                         <div class="card-footer">Embarque já ocorrido</div>
                     </div>
                 </a>
@@ -107,7 +107,11 @@
             </div>
 
             <div class="monitoring-panel">
-                <h3>Painel Geral de Monitoramento</h3>
+                <div class="panel-top">
+                    <h3>Painel Geral de Monitoramento</h3>
+                    <span class="filter-label" id="filter-label"></span>
+                    <button type="button" class="btn-check-all" id="btn-check-all">Verificar voos agora</button>
+                </div>
 
                 <table class="monitoring-table">
                     <thead>
@@ -121,51 +125,10 @@
                             <th>AÇÕES</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="monitoring-body">
                         <tr>
-                            <td class="dot"><span class="status-dot red"></span></td>
-                            <td>
-                                <span class="client-name">Renata Prado</span>
-                                <span class="client-pnr">PNR: QRS345T</span>
-                            </td>
-                            <td>Azul</td>
-                            <td>FOR ➔ POA</td>
-                            <td>01/10/2026 · 13:30</td>
-                            <td><span class="badge badge-red">Alterado - Alta prioridade</span></td>
-                            <td><button class="btn-details">Ver detalhes</button></td>
+                            <td colspan="7" class="empty-row">Carregando reservas...</td>
                         </tr>
-
-                        <tr>
-                            <td class="dot"><span class="status-dot yellow"></span></td>
-                            <td>
-                                <span class="client-name">Ana Oliveira</span>
-                                <span class="client-pnr">PNR: EF456G</span>
-                            </td>
-                            <td>LATAM</td>
-                            <td>GRU ➔ JFK</td>
-                            <td>09/02/2027 · 22:40</td>
-                            <td><span class="badge badge-yellow">Alterado - Baixa prioridade</span></td>
-                            <td>
-                                <div class="actions-cell">
-                                    <button class="btn-details">Ver detalhes</button>
-                                    <button class="btn-postpone">Adiar contato</button>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="dot"><span class="status-dot green"></span></td>
-                            <td>
-                                <span class="client-name">Roberto Campos</span>
-                                <span class="client-pnr">PNR: FGH567J</span>
-                            </td>
-                            <td>GOL</td>
-                            <td>VCP ➔ SAA</td>
-                            <td>30/08/2026 · 08:00</td>
-                            <td><span class="badge badge-green">Sem alteração</span></td>
-                            <td><button class="btn-details">Ver detalhes</button></td>
-                        </tr>
-
                     </tbody>
                 </table>
             </div>
@@ -179,6 +142,7 @@
         </main>
     </div>
 
+    <script src="../static/scripts/dashboard.js"></script>
 </body>
 
 </html>
