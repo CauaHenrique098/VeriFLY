@@ -67,25 +67,24 @@ segmentsList.addEventListener('click', (event) => {
 
 function getSegmentsData() {
     return Array.from(segmentsList.querySelectorAll('.segment')).map((segment, index) => ({
-        ordem: index + 1,
-        origem: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
-        destino: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
-        tipo: segment.querySelector('[name="type"]').value,
-        partidaOriginal: segment.querySelector('[name="departure_date"]').value,
-        chegadaOriginal: segment.querySelector('[name="arrival_date"]').value,
-        companhia: segment.querySelector('[name="airline"]').value,
-        localizador: segment.querySelector('[name="flight_locator"]').value.trim().toUpperCase(),
-        urlReserva: segment.querySelector('[name="reserve_url"]').value.trim()
+        order: index + 1,
+        origin: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
+        destination: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
+        type: segment.querySelector('[name="type"]').value,
+        departureOriginal: segment.querySelector('[name="departure_date"]').value,
+        arrivalOriginal: segment.querySelector('[name="arrival_date"]').value,
+        company: segment.querySelector('[name="airline"]').value,
+        urlReserve: segment.querySelector('[name="reserve_url"]').value.trim()
     }));
 }
 
 function getReserveData() {
     return {
-        nome: form.elements['client_name'].value.trim(),
-        codigoReserva: form.elements['reserve_pnr'].value.trim().toUpperCase(),
+        name: form.elements['client_name'].value.trim(),
+        codeReserve: form.elements['reserve_pnr'].value.trim().toUpperCase(),
         telefone: form.elements['client_phone'].value.trim(),
-        pasta: form.elements['folder'].value.trim(),
-        trechos: getSegmentsData()
+        folder: form.elements['folder'].value.trim(),
+        stretches: getSegmentsData()
     };
 }
 
