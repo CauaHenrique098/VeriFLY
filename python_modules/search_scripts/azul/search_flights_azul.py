@@ -1,4 +1,4 @@
-MAX_ATTEMPTS = 3
+MAX_ATTEMPTS = 6
 STOP = MAX_ATTEMPTS - 1
 
 def search_azul_viagens(index_reserve, context, reserve):
