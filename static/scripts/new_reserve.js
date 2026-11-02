@@ -38,7 +38,9 @@ function addSegment() {
     clone.querySelectorAll('input').forEach(input => input.value = '');
     clone.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
 
-    clone.querySelector('.segment-top').appendChild(createRemoveButton());
+    if (!clone.querySelector('.btn-remove-segment')) {
+        clone.querySelector('.segment-top').appendChild(createRemoveButton());
+    }
 
     segmentsList.appendChild(clone);
     updateSegments();
@@ -63,29 +65,56 @@ segmentsList.addEventListener('click', (event) => {
 });
 
 
-/* ---------- Coleta dos dados do formulário ---------- */
+/* ---------- Coleta e Validação dos dados do formulário ---------- */
 
 function getSegmentsData() {
-    return Array.from(segmentsList.querySelectorAll('.segment')).map((segment, index) => ({
-        ordem: index + 1,
-        origem: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
-        destino: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
-        tipo: segment.querySelector('[name="type"]').value,
-        partidaOriginal: segment.querySelector('[name="departure_date"]').value,
-        chegadaOriginal: segment.querySelector('[name="arrival_date"]').value,
-        companhia: segment.querySelector('[name="airline"]').value,
-        localizador: segment.querySelector('[name="flight_locator"]').value.trim().toUpperCase(),
-        urlReserva: segment.querySelector('[name="reserve_url"]').value.trim()
-    }));
+    return Array.from(segmentsList.querySelectorAll('.segment')).map((segment, index) => {
+        const departureDate = segment.querySelector('[name="departure_date"]').value.trim();
+        const departureHour = segment.querySelector('[name="departure_hour"]').value.trim();
+        const arrivalDate = segment.querySelector('[name="arrival_date"]').value.trim();
+        const arrivalHour = segment.querySelector('[name="arrival_hour"]').value.trim();
+
+        return {
+            order: index + 1,
+            origin: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
+            destination: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
+            type: segment.querySelector('[name="type"]').value,
+            departureOriginal: departureDate,
+            departureHourOriginal: departureHour,
+            arrivalOriginal: arrivalDate,
+            arrivalHourOriginal: arrivalHour,
+            company: segment.querySelector('[name="airline"]').value,
+            urlReserve: segment.querySelector('[name="reserve_url"]').value.trim(),
+            status: 'confirmed'
+        };
+    });
+}
+
+function validateSegmentsSchedule(stretches) {
+    for (const stretch of stretches) {
+        if (!stretch.departureHourOriginal || !stretch.arrivalHourOriginal) {
+            alert(`Preencha os horários de partida e chegada do Trecho ${stretch.order}.`);
+            return false;
+        }
+
+        const depDateTime = new Date(`${stretch.departureOriginal}T${stretch.departureHourOriginal}`);
+        const arrDateTime = new Date(`${stretch.arrivalOriginal}T${stretch.arrivalHourOriginal}`);
+
+        if (arrDateTime < depDateTime) {
+            alert(`No Trecho ${stretch.order}, a data/horário de chegada não pode ser anterior à data/horário de partida.`);
+            return false;
+        }
+    }
+    return true;
 }
 
 function getReserveData() {
     return {
-        nome: form.elements['client_name'].value.trim(),
-        codigoReserva: form.elements['reserve_pnr'].value.trim().toUpperCase(),
+        name: form.elements['client_name'].value.trim(),
+        codeReserve: form.elements['reserve_pnr'].value.trim().toUpperCase(),
         telefone: form.elements['client_phone'].value.trim(),
-        pasta: form.elements['folder'].value.trim(),
-        trechos: getSegmentsData()
+        folder: form.elements['folder'].value.trim(),
+        stretches: getSegmentsData()
     };
 }
 
@@ -96,6 +125,10 @@ form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const reserveData = getReserveData();
+
+    if (!validateSegmentsSchedule(reserveData.stretches)) {
+        return;
+    }
 
     btnRegister.disabled = true;
     btnRegister.textContent = 'Cadastrando...';

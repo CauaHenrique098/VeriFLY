@@ -1,5 +1,9 @@
 from flask import Flask, render_template, request, jsonify
+from datetime import datetime
+
 from firebase_db import db
+from comparator import compare_reserve, set_manual_status, STATUS_PENDING
+
 
 app = Flask(__name__)
 
@@ -24,20 +28,63 @@ def new_reserve():
     return render_template("new_reserve.html")
 
 
-# ---------- API: salvar reserva no Firestore ----------
+# ---------- API: reservas no Firestore ----------
 
 @app.route("/api/reservas", methods=["POST"])
 def create_reserve():
     data = request.get_json()
 
-    if not data or not data.get("nome") or not data.get("codigoReserva"):
+    # Chaves iguais às enviadas pelo new_reserve.js
+    if not data or not data.get("name") or not data.get("codeReserve"):
         return jsonify({"erro": "Dados incompletos"}), 400
 
-    if not data.get("trechos"):
+    if not data.get("stretches"):
         return jsonify({"erro": "Informe ao menos um trecho"}), 400
 
-    db.collection("reservas").document(data["codigoReserva"]).set(data)
-    return jsonify({"status": "ok", "id": data["codigoReserva"]}), 201
+    # Toda reserva nova começa aguardando a primeira verificação
+    data["status"] = STATUS_PENDING
+    data["createdAt"] = datetime.now().isoformat(timespec="seconds")
+
+    db.collection("reservas").document(data["codeReserve"]).set(data)
+    return jsonify({"status": "ok", "id": data["codeReserve"]}), 201
+
+
+@app.route("/api/reservas", methods=["GET"])
+def list_reserves():
+    reserves = []
+
+    for doc in db.collection("reservas").stream():
+        reserve = doc.to_dict()
+        reserve["id"] = doc.id
+        reserves.append(reserve)
+
+    return jsonify(reserves)
+
+
+# ---------- API: comparador e ações manuais ----------
+
+@app.route("/api/reservas/<reserve_id>/comparar", methods=["POST"])
+def compare_reserve_route(reserve_id):
+    try:
+        reserve = compare_reserve(reserve_id)
+    except LookupError:
+        return jsonify({"erro": "Reserva não encontrada"}), 404
+
+    return jsonify(reserve)
+
+
+@app.route("/api/reservas/<reserve_id>/status", methods=["PATCH"])
+def update_reserve_status(reserve_id):
+    data = request.get_json() or {}
+
+    try:
+        reserve = set_manual_status(reserve_id, data.get("status"))
+    except LookupError:
+        return jsonify({"erro": "Reserva não encontrada"}), 404
+    except ValueError as error:
+        return jsonify({"erro": str(error)}), 400
+
+    return jsonify(reserve)
 
 
 if __name__ == "__main__":
