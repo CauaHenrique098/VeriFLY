@@ -1,9 +1,9 @@
 MAX_ATTEMPTS = 6
 STOP = MAX_ATTEMPTS - 1
 
-def search_azul_viagens(index_reserve, context, reserve):
+def search_azul_viagens(context, reserve):
 
-    for index_attempts, attempts in enumerate(range(1, MAX_ATTEMPTS, 1)):
+    for attempts in range(1, MAX_ATTEMPTS, 1):
     
         try:
             context.clear_cookies()
@@ -86,8 +86,6 @@ def search_azul_viagens(index_reserve, context, reserve):
 
         
             page.close()
-
-            print(f"{index_reserve} - {flights_in_company["locator"]}")
 
             return flights_in_company
             
