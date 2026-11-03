@@ -3,16 +3,19 @@ MÓDULO COMPARADOR DE VOOS
 
 Fluxo (para uma reserva):
   1. Busca a reserva no Firestore e guarda a URL em uma variável (get_reserve_url)
-  2. Passa a URL para o buscador (flight_search.search_flight)
+  2. Passa a URL para o buscador real da companhia (flight_search.search_flight)
   3. Compara data e horário de embarque do retorno da companhia com o que está salvo
   4. Classifica e grava o status no próprio documento da reserva
+
+A classificação usa SÓ o embarque. A chegada também é comparada, mas apenas
+para exibir no detalhe da reserva (não muda a prioridade).
 """
 
 import re
+import unicodedata
 from datetime import date, datetime
 
 from firebase_db import db
-from flight_search import search_flight
 
 
 COLLECTION = "reservas"
@@ -53,27 +56,86 @@ def parse_saved_datetime(value):
     return day, (hour_text[:5] or None)
 
 
+MONTHS = {
+    "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
+    "jul": 7, "ago": 8, "set": 9, "out": 10, "nov": 11, "dez": 12
+}
+
+
+def _plain(text):
+    """minúsculas e sem acentos ('Fevereiro' -> 'fevereiro')."""
+    normalized = unicodedata.normalize("NFD", text or "")
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch)).lower()
+
+
 def parse_company_datetime(date_text, hour_text):
-    """Formato do scraper: date '23/05/2027' e hour '12:55'.
-    Procura cada um pelo padrão, então funciona mesmo se vierem trocados
-    (o scraper atual troca data e hora no 'destiny')."""
+    """Lê data e hora como o buscador devolve.
 
-    joined = f"{date_text or ''} {hour_text or ''}"
+    Aceita, na data: '23/05/2027', '23/05/27', '2027-05-23', '23/05' (sem ano),
+    '23 de maio de 2027', '23 mai 2027', 'qui, 23 mai'.
+    Aceita, na hora: '12:55', '6:10', '12h55'.
 
-    day_match = re.search(r"(\d{2})/(\d{2})/(\d{4})", joined)
-    hour_match = re.search(r"(\d{1,2}):(\d{2})", joined)
+    Procura cada um pelo padrão, então funciona mesmo se data e hora vierem
+    trocadas (o buscador da Azul troca os dois no 'destiny').
 
-    if not day_match:
-        return None, None
+    Devolve ((ano|None, mes, dia) | None, 'HH:MM' | None).
+    O ano pode vir None; resolve_day() descobre o ano depois."""
 
-    try:
-        day = date(int(day_match.group(3)), int(day_match.group(2)), int(day_match.group(1)))
-    except ValueError:
-        return None, None
+    joined = _plain(f"{date_text or ''} {hour_text or ''}")
 
-    hour = f"{int(hour_match.group(1)):02d}:{hour_match.group(2)}" if hour_match else None
+    hour = None
+    hour_match = re.search(r"(\d{1,2})\s*[:h]\s*(\d{2})", joined)
+    if hour_match:
+        hour = f"{int(hour_match.group(1)):02d}:{hour_match.group(2)}"
 
-    return day, hour
+    date_info = None
+
+    iso = re.search(r"(\d{4})-(\d{2})-(\d{2})", joined)
+    numeric = re.search(r"(\d{1,2})[/.-](\d{1,2})(?:[/.-](\d{2,4}))?", joined)
+    textual = re.search(r"(\d{1,2})\s*(?:de\s+)?([a-z]{3,9})\.?(?:\s*(?:de\s+)?(\d{4}))?", joined)
+
+    if iso:
+        date_info = (int(iso.group(1)), int(iso.group(2)), int(iso.group(3)))
+
+    elif numeric:
+        year = int(numeric.group(3)) if numeric.group(3) else None
+        if year is not None and year < 100:
+            year += 2000
+        date_info = (year, int(numeric.group(2)), int(numeric.group(1)))
+
+    elif textual and textual.group(2)[:3] in MONTHS:
+        year = int(textual.group(3)) if textual.group(3) else None
+        date_info = (year, MONTHS[textual.group(2)[:3]], int(textual.group(1)))
+
+    return date_info, hour
+
+
+def resolve_day(date_info, reference):
+    """Transforma (ano|None, mes, dia) em date.
+    Sem ano, escolhe o ano que deixa a data mais perto da data de referência
+    (a data cadastrada na reserva)."""
+
+    if date_info is None:
+        return None
+
+    year, month, day = date_info
+
+    years = [year] if year else [reference.year + delta for delta in (-1, 0, 1)] if reference else [date.today().year]
+
+    candidates = []
+    for candidate_year in years:
+        try:
+            candidates.append(date(candidate_year, month, day))
+        except ValueError:
+            continue
+
+    if not candidates:
+        return None
+
+    if reference and not year:
+        return min(candidates, key=lambda d: abs((d - reference).days))
+
+    return candidates[0]
 
 
 def to_iso(day, hour):
@@ -99,7 +161,7 @@ def get_reserve_url(stretches):
 # ---------------------------------------------------------------------------
 
 def extract_company_legs(company_data):
-    """Transforma o retorno do scraper em uma lista de voos (ida e volta)."""
+    """Transforma o retorno do buscador em uma lista de voos (ida e volta)."""
 
     legs = []
 
@@ -109,35 +171,67 @@ def extract_company_legs(company_data):
         if not info:
             continue
 
-        day, hour = parse_company_datetime(info["origin"].get("date"), info["origin"].get("hour"))
+        origin = info.get("origin") or {}
+        destiny = info.get("destiny") or {}
 
-        if day is None:  # busca falhou (scraper devolve None em tudo)
+        departure_info, departure_hour = parse_company_datetime(origin.get("date"), origin.get("hour"))
+
+        if departure_info is None:  # busca falhou (o buscador devolve None em tudo)
             continue
 
+        arrival_info, arrival_hour = parse_company_datetime(destiny.get("date"), destiny.get("hour"))
+
         legs.append({
-            "origin": clean_airport(info["origin"].get("airport")),
-            "destination": clean_airport(info["destiny"].get("airport")),
-            "departureDate": day,
-            "departureHour": hour
+            "origin": clean_airport(origin.get("airport")),
+            "destination": clean_airport(destiny.get("airport")),
+            "departureInfo": departure_info,
+            "departureHour": departure_hour,
+            "arrivalInfo": arrival_info,
+            "arrivalHour": arrival_hour
         })
 
     return legs
 
 
-def find_leg(segment, legs):
-    """Acha o voo da companhia que corresponde ao trecho cadastrado (origem + destino)."""
+def match_legs(segments, legs):
+    """Liga cada trecho cadastrado a um voo da companhia (cada voo é usado uma vez).
+    Ordem de tentativa: origem + destino iguais -> só a origem igual ->
+    mesma posição (só quando há o mesmo número de trechos e de voos)."""
 
-    for leg in legs:
-        if leg["origin"] == segment.get("origin") and leg["destination"] == segment.get("destination"):
-            return leg
+    matched = [None] * len(segments)
+    used = set()
 
-    return None
+    def attach(index, leg_index):
+        matched[index] = legs[leg_index]
+        used.add(leg_index)
+
+    for i, segment in enumerate(segments):
+        for j, leg in enumerate(legs):
+            if j not in used and leg["origin"] == segment.get("origin") and leg["destination"] == segment.get("destination"):
+                attach(i, j)
+                break
+
+    for i, segment in enumerate(segments):
+        if matched[i] is not None:
+            continue
+        for j, leg in enumerate(legs):
+            if j not in used and leg["origin"] == segment.get("origin"):
+                attach(i, j)
+                break
+
+    if len(legs) == len(segments):
+        for i in range(len(segments)):
+            if matched[i] is None and i not in used:
+                attach(i, i)
+
+    return matched
 
 
 def compare_segment(segment, leg):
-    """Compara data e horário de embarque de UM trecho."""
+    """Compara data e horário de embarque (e, só para exibição, a chegada) de UM trecho."""
 
     saved_day, saved_hour = parse_saved_datetime(segment.get("departureOriginal"))
+    saved_arrival_day, saved_arrival_hour = parse_saved_datetime(segment.get("arrivalOriginal"))
 
     result = {
         "order": segment.get("order"),
@@ -146,21 +240,38 @@ def compare_segment(segment, leg):
         "savedDeparture": segment.get("departureOriginal"),
         "newDeparture": None,
         "changedFields": [],
-        "status": "not_found"  # not_found | same | changed
+        "savedArrival": segment.get("arrivalOriginal"),
+        "newArrival": None,
+        "arrivalChanged": None,   # None = não deu para conferir
+        "status": "not_found"     # not_found | same | changed
     }
 
     if leg is None or saved_day is None:
         return result
 
-    if saved_day != leg["departureDate"]:
+    new_day = resolve_day(leg["departureInfo"], saved_day)
+
+    if new_day is None:
+        return result
+
+    if saved_day != new_day:
         result["changedFields"].append("date")
 
     # Se o cadastro não tem horário, só a data é comparada
     if saved_hour and leg["departureHour"] and saved_hour != leg["departureHour"]:
         result["changedFields"].append("hour")
 
-    result["newDeparture"] = to_iso(leg["departureDate"], leg["departureHour"])
+    result["newDeparture"] = to_iso(new_day, leg["departureHour"])
     result["status"] = "changed" if result["changedFields"] else "same"
+
+    # Chegada: só informativa
+    new_arrival_day = resolve_day(leg["arrivalInfo"], saved_arrival_day or saved_day)
+
+    if new_arrival_day and saved_arrival_day:
+        hour_differs = bool(saved_arrival_hour and leg["arrivalHour"] and saved_arrival_hour != leg["arrivalHour"])
+
+        result["newArrival"] = to_iso(new_arrival_day, leg["arrivalHour"])
+        result["arrivalChanged"] = (new_arrival_day != saved_arrival_day) or hour_differs
 
     return result
 
@@ -205,6 +316,17 @@ def compare_reserve(reserve_id):
     if reserve.get("status", STATUS_PENDING) not in COMPARABLE_STATUS:
         return _with_id(reserve, reserve_id)
 
+    update = build_comparison_update(reserve)
+    doc_ref.update(update)
+    reserve.update(update)
+
+    return _with_id(reserve, reserve_id)
+
+
+def build_comparison_update(reserve):
+    """Busca e compara localmente, sem gravar resultados no banco."""
+    from flight_search import search_flight
+
     stretches = reserve.get("stretches") or []
     reserve_url = get_reserve_url(stretches)                         # 1. URL em uma variável
     company = stretches[0].get("company") if stretches else None
@@ -221,7 +343,8 @@ def compare_reserve(reserve_id):
         if not legs:
             raise ValueError("A busca não retornou dados de voo")
 
-        results = [compare_segment(s, find_leg(s, legs)) for s in stretches]  # 3. comparação
+        matched = match_legs(stretches, legs)
+        results = [compare_segment(s, leg) for s, leg in zip(stretches, matched)]  # 3. comparação
 
         has_changes = any(r["status"] == "changed" for r in results)
         has_missing = any(r["status"] == "not_found" for r in results)
@@ -235,13 +358,9 @@ def compare_reserve(reserve_id):
 
     except Exception as error:
         # Falha na busca: mantém o status atual e registra o motivo
-        print(f"[comparador] {reserve_id}: {error}")
         update["lastCheckError"] = str(error)
 
-    doc_ref.update(update)
-    reserve.update(update)
-
-    return _with_id(reserve, reserve_id)
+    return update
 
 
 def set_manual_status(reserve_id, new_status):

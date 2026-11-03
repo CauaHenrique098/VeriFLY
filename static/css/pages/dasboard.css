@@ -106,15 +106,39 @@
     .panel-top {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 12px;
 
-        .filter-label {
-            font-size: 12px;
-            color: #718096;
+        .panel-filters {
+            margin-left: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-chip {
+            background-color: #ffffff;
+            border: 1px solid #CBD5E1;
+            color: #2D3748;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+
+            &:hover {
+                border-color: #107ACF;
+            }
+
+            &.active {
+                background-color: #107ACF;
+                border-color: #107ACF;
+                color: #ffffff;
+            }
         }
 
         .btn-check-all {
-            margin-left: auto;
             background-color: #107ACF;
             border: none;
             color: #ffffff;
@@ -143,21 +167,28 @@
         th {
             color: #718096;
             font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #E2E8F0;
+            font-weight: 500;
+            text-align: left;
+            padding: 0 8px 12px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        tbody tr.reserve-row {
+            border-bottom: 1px solid #EDF2F7;
         }
 
         td {
-            padding: 16px 0;
+            padding: 16px 8px;
             font-size: 14px;
-            text-align: center;
+            text-align: left;
+            vertical-align: middle;
 
             &.dot {
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                padding-left: 14px;
+            }
+
+            .nowrap {
+                white-space: nowrap;
             }
         }
 
@@ -201,7 +232,25 @@
             margin-top: 2px;
         }
 
-        .btn-details {
+        .cell-main {
+            display: block;
+            font-weight: 600;
+            color: #2D3748;
+        }
+
+        .cell-sub {
+            display: block;
+            font-size: 11px;
+            color: #A0AEC0;
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+
+        .btn-details,
+        .btn-phone {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             background-color: transparent;
             border: 1px solid #107ACF;
             color: #107ACF;
@@ -213,15 +262,18 @@
             transition: all 0.2s ease;
 
             &:hover {
-                background-color: #F7FAFC;
-                border-color: #A0AEC0;
+                background-color: #F0F7FD;
+            }
+
+            svg {
+                width: 12px;
+                height: 12px;
             }
         }
 
         .actions-cell {
             display: flex;
             flex-wrap: wrap;
-            justify-content: center;
             gap: 8px;
         }
 
@@ -229,10 +281,10 @@
         .btn-completed {
             border: none;
             color: #ffffff;
-            padding: 6px 12px;
+            padding: 7px 12px;
             border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
 
@@ -272,33 +324,25 @@
         .empty-row {
             color: #A0AEC0;
             padding: 32px 0;
-        }
-
-        .btn-postpone {
-            background-color: #ECC94B;
-            border: none;
-            color: black;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-
-            &:hover {
-                background-color: #D69E2E;
-            }
+            text-align: center;
         }
 
         .badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 999px;
             font-size: 12px;
             font-weight: 600;
-            display: inline-block;
+
+            svg {
+                width: 12px;
+                height: 12px;
+            }
 
             &.badge-red {
-                background-color: #FFF5F5;
+                background-color: #FED7D7;
                 color: #E53E3E;
             }
 
@@ -308,8 +352,8 @@
             }
 
             &.badge-green {
-                background-color: #F0FFF4;
-                color: #38A169;
+                background-color: #E6F9EE;
+                color: #2F855A;
             }
 
             &.badge-blue {
@@ -323,5 +367,82 @@
             }
         }
 
+        /* ---------- Linha de detalhes (botão "Ver detalhes") ---------- */
+
+        .details-cell {
+            padding: 0 24px 20px;
+        }
+
+        .details-box {
+            background-color: #EDEDED;
+            border-radius: 8px;
+            padding: 14px 16px 18px;
+
+            .details-name {
+                font-size: 13px;
+                font-weight: 600;
+                color: #1A202C;
+            }
+
+            .details-meta {
+                font-size: 11px;
+                color: #718096;
+                margin: 2px 0 12px;
+            }
+
+            .details-flights {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .flight-card {
+                background-color: #ffffff;
+                border-radius: 6px;
+                padding: 10px 12px;
+                min-height: 96px;
+                font-size: 11px;
+                color: #2D3748;
+            }
+
+            .flight-route {
+                font-size: 13px;
+
+                strong {
+                    margin-right: 6px;
+                }
+
+                span {
+                    color: #718096;
+                }
+            }
+
+            .flight-type {
+                font-size: 10px;
+                color: #718096;
+                margin-bottom: 4px;
+            }
+
+            .flight-line {
+                line-height: 1.6;
+
+                span {
+                    margin-left: 8px;
+                    font-weight: 500;
+                }
+            }
+
+            .text-ok {
+                color: #2F855A;
+            }
+
+            .text-error {
+                color: #E53E3E;
+            }
+
+            .text-muted {
+                color: #A0AEC0;
+            }
+        }
     }
 }

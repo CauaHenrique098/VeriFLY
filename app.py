@@ -2,7 +2,8 @@ from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 
 from firebase_db import db
-from comparator import compare_reserve, set_manual_status, STATUS_PENDING
+from comparator import set_manual_status, STATUS_PENDING
+from verification_queue import attach_jobs, request_check
 
 
 app = Flask(__name__)
@@ -58,7 +59,7 @@ def list_reserves():
         reserve["id"] = doc.id
         reserves.append(reserve)
 
-    return jsonify(reserves)
+    return jsonify(attach_jobs(reserves))
 
 
 # ---------- API: comparador e ações manuais ----------
@@ -66,11 +67,11 @@ def list_reserves():
 @app.route("/api/reservas/<reserve_id>/comparar", methods=["POST"])
 def compare_reserve_route(reserve_id):
     try:
-        reserve = compare_reserve(reserve_id)
+        reserve = request_check(reserve_id)
     except LookupError:
         return jsonify({"erro": "Reserva não encontrada"}), 404
 
-    return jsonify(reserve)
+    return jsonify(reserve), 202
 
 
 @app.route("/api/reservas/<reserve_id>/status", methods=["PATCH"])

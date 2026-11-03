@@ -109,7 +109,14 @@
             <div class="monitoring-panel">
                 <div class="panel-top">
                     <h3>Painel Geral de Monitoramento</h3>
-                    <span class="filter-label" id="filter-label"></span>
+                    <div class="panel-filters" id="panel-filters">
+                        <button type="button" class="filter-chip active" data-chip="">Todas</button>
+                        <button type="button" class="filter-chip" data-chip="high_priority">Alta prioridade</button>
+                        <button type="button" class="filter-chip" data-chip="low_priority">Baixa prioridade</button>
+                        <button type="button" class="filter-chip" data-chip="confirmed">Confirmados</button>
+                        <button type="button" class="filter-chip" data-chip="solved">Resolvidos</button>
+                        <button type="button" class="filter-chip" data-chip="completed">Realizados</button>
+                    </div>
                     <button type="button" class="btn-check-all" id="btn-check-all">Verificar voos agora</button>
                 </div>
 
