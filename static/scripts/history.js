@@ -177,7 +177,7 @@ async function loadTimeline(id, more = false) {
     timelines.set(id, { ...previous, loading: true, error: null });
     render();
     try {
-        const response = await fetch(`/api/reservas/${encodeURIComponent(id)}/historico${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, { cache: 'no-store' });
+        const response = await window.Verifly.fetch(`/api/reservas/${encodeURIComponent(id)}/historico${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`, { cache: 'no-store' });
         if (!response.ok) throw new Error('Não foi possível carregar o histórico desta reserva.');
         const body = await response.json();
         const events = new Map((previous.events || []).map(event => [event.id, event]));
@@ -196,7 +196,7 @@ async function loadTimeline(id, more = false) {
 
 async function loadReserves() {
     try {
-        const response = await fetch('/api/reservas', { cache: 'no-store' });
+        const response = await window.Verifly.fetch('/api/reservas', { cache: 'no-store' });
         if (!response.ok) throw new Error('Não foi possível atualizar as reservas. Tentaremos novamente automaticamente.');
         const next = await response.json();
         const changed = JSON.stringify(next) !== JSON.stringify(reserves);
@@ -256,5 +256,10 @@ searchInput.addEventListener('input', render);
 async function refresh() {
     if (!document.hidden) await loadReserves();
     setTimeout(refresh, 5000);
+}
+const requestedReserve = new URLSearchParams(window.location.search).get('reserve');
+if (requestedReserve) {
+    searchInput.value = requestedReserve;
+    expanded.add(requestedReserve);
 }
 refresh();

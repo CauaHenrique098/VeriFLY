@@ -51,7 +51,7 @@ def request_check(reserve_id):
             if job.get("state") not in ("queued", "running"):
                 job = {"state": "queued", "requestedAt": now().isoformat(), "error": None}
                 transaction.set(job_ref, job)
-                append_event(transaction, reserve_ref, "check_requested", reserve, reserve)
+                append_event(db, transaction, reserve_ref, "check_requested", reserve, reserve)
         reserve["verification"] = public_job(job) if job else None
         return reserve
 
@@ -132,7 +132,7 @@ def finish_check(reserve_id, token, searched_reserve, update, error=None):
             before = dict(reserve)
             reserve.update(update)
             transaction.update(reserve_ref, update)
-            append_event(transaction, reserve_ref, "check_failed" if state == "failed" else "checked", before, reserve)
+            append_event(db, transaction, reserve_ref, "check_failed" if state == "failed" else "checked", before, reserve)
         transaction.update(job_ref, {
             "state": state, "error": message, "finishedAt": now().isoformat(),
             "leaseUntil": now(), "token": None,

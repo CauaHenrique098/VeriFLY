@@ -332,7 +332,7 @@ def compare_reserve(reserve_id):
             raise ValueError("A reserva foi editada durante a busca; verifique novamente")
         updated = {**current, **update}
         transaction.update(doc_ref, update)
-        append_event(transaction, doc_ref, "check_failed" if update.get("lastCheckError") else "checked", current, updated)
+        append_event(db, transaction, doc_ref, "check_failed" if update.get("lastCheckError") else "checked", current, updated)
         return _with_id(updated, reserve_id)
 
     return publish(db.transaction())
@@ -400,7 +400,7 @@ def set_manual_status(reserve_id, new_status):
         update = {"status": new_status, "previousStatus": current, "statusUpdatedAt": _now()}
         updated = {**reserve, **update}
         transaction.update(doc_ref, update)
-        append_event(transaction, doc_ref, "status_changed", reserve, updated)
+        append_event(db, transaction, doc_ref, "status_changed", reserve, updated)
         return _with_id(updated, reserve_id)
 
     return change(db.transaction())

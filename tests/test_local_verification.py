@@ -8,6 +8,7 @@ import unittest
 from datetime import timedelta
 from unittest.mock import patch
 from uuid import uuid4
+import time
 
 
 class Snapshot:
@@ -31,6 +32,12 @@ class Reference:
 
     def update(self, data):
         self.store[self.key].update(copy.deepcopy(data))
+
+    def set(self, data):
+        self.store[self.key] = copy.deepcopy(data)
+
+    def delete(self):
+        self.store.pop(self.key, None)
 
     def collection(self, name):
         return Collection(self.store, f"{self.key[0]}/{self.id}/{name}")
@@ -101,6 +108,16 @@ class Database:
         return [ref.get() for ref in refs]
 
 
+def authorize_client(db, client):
+    from authentication import SESSION_COOKIE, digest
+    db.store["usuarios", "test-user"] = {"email": "equipe@example.test", "name": "Equipe", "enabled": True, "passwordVersion": "v1"}
+    db.store["sessoes", digest("test-session")] = {
+        "userId": "test-user", "csrfToken": "test-csrf", "passwordVersion": "v1", "expiresAt": time.time() + 3600,
+    }
+    client.set_cookie(SESSION_COOKIE, "test-session")
+    client.environ_base["HTTP_X_CSRF_TOKEN"] = "test-csrf"
+
+
 class LocalVerificationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -137,6 +154,7 @@ class LocalVerificationTests(unittest.TestCase):
         patcher.start()
         self.addCleanup(patcher.stop)
         self.client = self.app_module.app.test_client()
+        authorize_client(self.db, self.client)
 
     def start_check(self):
         self.queue.request_check("ABC123")

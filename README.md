@@ -101,3 +101,66 @@ Reservas anteriores à implementação aparecem com sua situação atual. Não h
 reconstrução de eventos antigos que não foram armazenados. Depois da publicação,
 reinicie também o worker local com o código atualizado para que ele passe a
 registrar os eventos de verificação.
+
+## Login e cadastro inicial da equipe
+
+O acesso às páginas internas e às APIs exige uma conta. As contas ficam na
+coleção `usuarios` do Firestore, com senha protegida por hash scrypt. Não há
+cadastro público ou senha padrão. O comando abaixo cria a primeira conta e pode
+ser repetido para os demais integrantes da equipe.
+
+Com a credencial Firebase configurada no terminal, execute:
+
+```powershell
+$env:GOOGLE_APPLICATION_CREDENTIALS = (Resolve-Path '.\verifly-56717-firebase-adminsdk-fbsvc-3f1251030a.json').Path
+.\.venv\Scripts\python.exe create_user.py --email 'seu-email@agencia.com.br' --name 'Seu nome'
+```
+
+A senha é solicitada duas vezes, não aparece no terminal e deve ter de 12 a 256
+caracteres. O cadastro usa o mesmo projeto Firebase configurado no painel.
+Para redefinir a senha de uma conta existente, use o mesmo comando com
+`--reset-password`; isso também invalida todas as sessões anteriores da conta.
+Para desativar uma conta, defina seu campo `enabled` como `false` no Firestore.
+
+Depois de publicar o código atualizado no servidor, acesse `/` ou `/login.html`.
+O botão ENTRAR valida o e-mail e a senha, e o ícone de olho mostra ou oculta a
+senha. As sessões duram oito horas e usam cookies HttpOnly e SameSite=Lax; os
+identificadores das sessões são armazenados no banco apenas como hash. Sair
+revoga a sessão no servidor e retorna ao login. Requisições de alteração exigem
+também um token CSRF. Cinco tentativas por combinação de e-mail/IP em quinze
+minutos bloqueiam temporariamente novas tentativas dessa combinação.
+
+O servidor precisa de acesso às coleções `usuarios`, `sessoes`,
+`tentativas_login` e `notificacoes`, além das coleções já utilizadas. Não é
+necessária uma chave secreta do Flask: as sessões são mantidas no Firestore.
+Em produção com HTTPS, configure `VERIFLY_COOKIE_SECURE=1` no ambiente do
+servidor. Em desenvolvimento local por HTTP, mantenha essa variável em `0`.
+
+### Verificação Cloudflare opcional
+
+Para habilitar o desafio real do Cloudflare Turnstile no login, configure
+`TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` no servidor e cadastre o domínio
+do site no Cloudflare. A chave secreta nunca é enviada ao navegador. O token do
+desafio é validado no servidor pela API Siteverify antes da autenticação.
+Sem essas duas variáveis, o login funciona com e-mail e senha, e o desafio e a
+indicação de proteção Cloudflare não são exibidos. Se apenas uma chave estiver
+configurada, o login é bloqueado até a configuração ser corrigida.
+Consulte a [documentação de validação do Turnstile](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
+
+## Menu superior
+
+Dashboard, histórico e cadastro usam o mesmo componente `_top_menu.html`.
+A pesquisa encontra nome do cliente, localizador e pasta sem diferenciar
+maiúsculas ou acentos, com até oito sugestões. Clique em um resultado ou use
+as setas e Enter para abrir a reserva expandida no histórico. No dashboard e
+no histórico, digitar também filtra a lista da página.
+
+O sino apresenta cadastros, atualizações, alterações de voo, falhas e ações
+manuais. Novos alertas são gravados na mesma transação do histórico da reserva;
+resultados idênticos não repetem notificações de alteração ou falha. Alertas de
+reservas anteriores à implementação também aparecem. A lista mostra até 50
+notificações e é atualizada a cada quinze segundos, além de ser atualizada ao
+abrir o sino. A leitura é salva por conta no Firestore e permanece entre sessões.
+Clique em uma notificação para abrir a reserva ou em **Marcar como lidas** para
+marcar os itens exibidos. Reinicie o worker local com o código atualizado para
+que as novas buscas também gerem notificações.

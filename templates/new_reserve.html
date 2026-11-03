@@ -16,6 +16,7 @@
     <link rel="icon" type="image/x-icon" href="../static/images/favicon.ico">
     
     <title>Verifly - Nova reserva</title>
+    <link rel="stylesheet" href="../static/css/components/top_menu.css">
 </head>
 
 <body>
@@ -30,17 +31,7 @@
             </nav>
         </div>
 
-        <div id="top-menu">
-            <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
-
-            <div class="navbar-actions">
-                <p style="font-size: 15px;">Usuário: Administrador</p>
-                <img src="../static/images/notification.png">
-                <div>
-                    <button><img src="../static/images/sair.png"></button>
-                </div>
-            </div>
-        </div>
+        {% include "_top_menu.html" %}
 
         <main id="page-content">
 
@@ -145,6 +136,7 @@
         </main>
     </div>
 
+    <script src="../static/scripts/top_menu.js"></script>
     <script src="../static/scripts/new_reserve.js"></script>
 </body>
 

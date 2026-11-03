@@ -8,6 +8,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+from jinja2 import Environment, FileSystemLoader
 
 try:
     from playwright.sync_api import sync_playwright
@@ -16,6 +17,18 @@ except ImportError:
 
 
 class QuietHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        path = urlparse(self.path).path
+        if path.startswith("/templates/") and path.endswith(".html"):
+            environment = Environment(loader=FileSystemLoader(Path(self.directory) / "templates"), autoescape=True)
+            html = environment.get_template(Path(path).name).render().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(html)
+        else:
+            super().do_GET()
+
     def log_message(self, *args):
         pass
 
@@ -66,7 +79,13 @@ class HistoryUITests(unittest.TestCase):
 
     def route_request(self, route):
         url = urlparse(route.request.url)
-        if url.path == "/api/reservas":
+        if url.path == "/api/auth/me":
+            route.fulfill(json={"user": {"name": "Equipe", "email": "equipe@example.test"}, "csrfToken": "test-csrf"})
+        elif url.path == "/api/notificacoes":
+            route.fulfill(json={"notifications": [], "unreadCount": 0})
+        elif url.path == "/api/pesquisa":
+            route.fulfill(json={"results": []})
+        elif url.path == "/api/reservas":
             route.fulfill(status=503 if self.fail_list else 200, json=self.reserves)
         elif url.path.endswith("/historico"):
             cursor = parse_qs(url.query).get("cursor", [None])[0]

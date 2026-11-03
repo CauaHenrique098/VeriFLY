@@ -304,8 +304,12 @@ function buildRow(reserve) {
 }
 
 function renderTable() {
+    const query = (document.querySelector('[data-menu-search]')?.value || '')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     const visible = reserves
         .filter(reserve => !activeFilter || reserve.status === activeFilter)
+        .filter(reserve => `${reserve.name || ''} ${reserve.codeReserve || ''} ${reserve.id} ${reserve.folder || ''}`
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().includes(query))
         .sort((a, b) => {
             const byStatus = STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
             if (byStatus !== 0) return byStatus;
@@ -346,7 +350,7 @@ function setFilter(filter) {
 
 async function loadReserves(silent = false) {
     try {
-        const response = await fetch(API_URL);
+        const response = await window.Verifly.fetch(API_URL);
 
         if (!response.ok) {
             throw new Error('Erro ao buscar as reservas (status ' + response.status + ')');
@@ -405,7 +409,7 @@ async function changeStatus(button) {
     button.disabled = true;
 
     try {
-        const response = await fetch(`${API_URL}/${encodeURIComponent(button.dataset.id)}/status`, {
+        const response = await window.Verifly.fetch(`${API_URL}/${encodeURIComponent(button.dataset.id)}/status`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: button.dataset.action })
@@ -466,7 +470,7 @@ btnCheckAll.addEventListener('click', async () => {
             btnCheckAll.textContent = `Solicitando ${index + 1}/${targets.length}...`;
 
             try {
-                const response = await fetch(`${API_URL}/${encodeURIComponent(targets[index].id)}/comparar`, { method: 'POST' });
+                const response = await window.Verifly.fetch(`${API_URL}/${encodeURIComponent(targets[index].id)}/comparar`, { method: 'POST' });
 
                 if (!response.ok) {
                     const body = await response.json().catch(() => ({}));
@@ -490,6 +494,7 @@ btnCheckAll.addEventListener('click', async () => {
 });
 
 
+document.querySelector('[data-menu-search]')?.addEventListener('input', renderTable);
 loadReserves();
 
 // Atualiza os resultados que o worker publica, inclusive após recarregar o painel.

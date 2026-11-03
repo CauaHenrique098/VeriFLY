@@ -23,13 +23,32 @@ def history_snapshot(reserve):
     return snapshot
 
 
-def append_event(writer, reserve_ref, kind, before, after):
+def append_event(db, writer, reserve_ref, kind, before, after):
     timestamp = utc_now()
     event_ref = reserve_ref.collection("historico").document()
     writer.set(event_ref, {
         "type": kind, "occurredAt": timestamp,
         "before": history_snapshot(before), "after": history_snapshot(after),
     })
+    titles = {
+        "created": "Reserva cadastrada", "updated": "Cadastro da reserva atualizado",
+        "status_changed": "Status da reserva atualizado", "check_failed": "Falha na verificação",
+    }
+    title = titles.get(kind)
+    if kind == "checked" and after.get("status") in ("high_priority", "low_priority") and (
+        (before or {}).get("segmentResults") != after.get("segmentResults") or (before or {}).get("status") != after.get("status")
+    ):
+        title = "Alteração de voo identificada"
+    if kind == "check_failed" and (before or {}).get("lastCheckError") == after.get("lastCheckError"):
+        title = None
+    if title:
+        # A notificação acompanha a mesma transação do evento e da reserva.
+        notification_ref = db.collection("notificacoes").document(event_ref.id)
+        writer.set(notification_ref, {
+            "reserveId": reserve_ref.id, "type": kind, "title": title, "occurredAt": timestamp,
+            "name": after.get("name"), "codeReserve": after.get("codeReserve") or reserve_ref.id,
+            "status": after.get("status"), "message": after.get("lastCheckError") if kind == "check_failed" else None,
+        })
     metadata = {"historyLastAt": timestamp, "historyLastType": kind}
     writer.update(reserve_ref, metadata)
     after.update(metadata)
@@ -46,7 +65,7 @@ def save_reserve(db, data):
         reserve = {key: deepcopy(data.get(key)) for key in ("name", "codeReserve", "telefone", "folder", "stretches")}
         reserve.update({"status": "pending", "createdAt": (before or {}).get("createdAt") or utc_now()})
         transaction.set(ref, reserve)
-        append_event(transaction, ref, "updated" if before else "created", before, reserve)
+        append_event(db, transaction, ref, "updated" if before else "created", before, reserve)
         return reserve
 
     return save(db.transaction())
