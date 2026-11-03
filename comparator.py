@@ -16,6 +16,8 @@ import unicodedata
 from datetime import date, datetime
 
 from firebase_db import db
+from google.cloud import firestore
+from reservation_history import append_event
 
 
 COLLECTION = "reservas"
@@ -317,10 +319,23 @@ def compare_reserve(reserve_id):
         return _with_id(reserve, reserve_id)
 
     update = build_comparison_update(reserve)
-    doc_ref.update(update)
-    reserve.update(update)
 
-    return _with_id(reserve, reserve_id)
+    @firestore.transactional
+    def publish(transaction):
+        current_snapshot = doc_ref.get(transaction=transaction)
+        if not current_snapshot.exists:
+            raise LookupError(reserve_id)
+        current = current_snapshot.to_dict()
+        if current.get("status", STATUS_PENDING) not in COMPARABLE_STATUS:
+            return _with_id(current, reserve_id)
+        if current.get("stretches") != reserve.get("stretches"):
+            raise ValueError("A reserva foi editada durante a busca; verifique novamente")
+        updated = {**current, **update}
+        transaction.update(doc_ref, update)
+        append_event(transaction, doc_ref, "check_failed" if update.get("lastCheckError") else "checked", current, updated)
+        return _with_id(updated, reserve_id)
+
+    return publish(db.transaction())
 
 
 def build_comparison_update(reserve):
@@ -370,30 +385,25 @@ def set_manual_status(reserve_id, new_status):
         raise ValueError("Status inválido")
 
     doc_ref = db.collection(COLLECTION).document(reserve_id)
-    snapshot = doc_ref.get()
 
-    if not snapshot.exists:
-        raise LookupError(reserve_id)
+    @firestore.transactional
+    def change(transaction):
+        snapshot = doc_ref.get(transaction=transaction)
+        if not snapshot.exists:
+            raise LookupError(reserve_id)
+        reserve = snapshot.to_dict()
+        current = reserve.get("status", STATUS_PENDING)
+        if new_status == STATUS_SOLVED and current not in (STATUS_HIGH, STATUS_LOW):
+            raise ValueError("Só é possível resolver voos que sofreram alteração")
+        if new_status == STATUS_COMPLETED and current == STATUS_COMPLETED:
+            raise ValueError("O voo já está como realizado")
+        update = {"status": new_status, "previousStatus": current, "statusUpdatedAt": _now()}
+        updated = {**reserve, **update}
+        transaction.update(doc_ref, update)
+        append_event(transaction, doc_ref, "status_changed", reserve, updated)
+        return _with_id(updated, reserve_id)
 
-    reserve = snapshot.to_dict()
-    current = reserve.get("status", STATUS_PENDING)
-
-    if new_status == STATUS_SOLVED and current not in (STATUS_HIGH, STATUS_LOW):
-        raise ValueError("Só é possível resolver voos que sofreram alteração")
-
-    if new_status == STATUS_COMPLETED and current == STATUS_COMPLETED:
-        raise ValueError("O voo já está como realizado")
-
-    update = {
-        "status": new_status,
-        "previousStatus": current,
-        "statusUpdatedAt": _now()
-    }
-
-    doc_ref.update(update)
-    reserve.update(update)
-
-    return _with_id(reserve, reserve_id)
+    return change(db.transaction())
 
 
 def _with_id(reserve, reserve_id):

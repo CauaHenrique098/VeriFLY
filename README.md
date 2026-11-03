@@ -79,3 +79,25 @@ O intervalo de consulta pode ser ajustado com `--poll-seconds 10`. O modo contí
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 node --check static/scripts/dashboard.js
 ```
+
+## Histórico de reservas
+
+A página `history.html` lista todas as reservas do Firestore e atualiza a cada
+cinco segundos enquanto estiver visível. A busca aceita passageiro, localizador
+e pasta. Os filtros de 30/60 dias e de período consideram a última movimentação
+da reserva; os contadores refletem as reservas filtradas. Ao abrir uma reserva,
+a linha do tempo exibe os eventos do mais recente para o mais antigo, com
+paginação de 25 eventos e opção de carregar os anteriores.
+
+Cadastro, atualização do cadastro, solicitação de verificação, resultado da
+consulta, falha e mudanças manuais de status são registrados na subcoleção
+`reservas/{id}/historico`. Cada evento contém data/hora e os dados anteriores e
+posteriores, incluindo os horários consultados. O evento e a alteração da reserva
+são gravados na mesma transação. Novas verificações preservam os eventos antigos.
+O endpoint de leitura é `GET /api/reservas/{id}/historico`, com parâmetros
+opcionais `limit` (1 a 100) e `cursor` retornado como `nextCursor`.
+
+Reservas anteriores à implementação aparecem com sua situação atual. Não há
+reconstrução de eventos antigos que não foram armazenados. Depois da publicação,
+reinicie também o worker local com o código atualizado para que ele passe a
+registrar os eventos de verificação.

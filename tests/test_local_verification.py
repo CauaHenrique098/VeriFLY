@@ -7,6 +7,7 @@ import types
 import unittest
 from datetime import timedelta
 from unittest.mock import patch
+from uuid import uuid4
 
 
 class Snapshot:
@@ -31,25 +32,51 @@ class Reference:
     def update(self, data):
         self.store[self.key].update(copy.deepcopy(data))
 
+    def collection(self, name):
+        return Collection(self.store, f"{self.key[0]}/{self.id}/{name}")
+
 
 class Collection:
     def __init__(self, store, name):
         self.store, self.name = store, name
         self.filter = None
+        self.order = None
+        self.cap = None
+        self.cursor = None
 
-    def document(self, doc_id):
-        return Reference(self.store, self.name, doc_id)
+    def document(self, doc_id=None):
+        return Reference(self.store, self.name, doc_id or uuid4().hex)
+
+    def order_by(self, field, direction=None):
+        self.order = field, direction
+        return self
+
+    def limit(self, count):
+        self.cap = count
+        return self
+
+    def start_after(self, snapshot):
+        self.cursor = snapshot.id
+        return self
 
     def where(self, *, filter):
         self.filter = filter
         return self
 
     def stream(self):
+        snapshots = []
         for collection, doc_id in list(self.store):
             if collection == self.name:
                 snapshot = self.document(doc_id).get()
                 if self.filter is None or snapshot.data.get(self.filter.field_path) == self.filter.value:
-                    yield snapshot
+                    snapshots.append(snapshot)
+        if self.order:
+            field, direction = self.order
+            snapshots.sort(key=lambda snapshot: (snapshot.data[field], snapshot.id), reverse=direction == "DESCENDING")
+        if self.cursor:
+            position = next(i for i, snapshot in enumerate(snapshots) if snapshot.id == self.cursor)
+            snapshots = snapshots[position + 1:]
+        yield from snapshots[:self.cap]
 
 
 class Transaction:
@@ -201,6 +228,98 @@ class LocalVerificationTests(unittest.TestCase):
         response = self.client.post("/api/reservas/ABC123/comparar")
         self.assertEqual(response.status_code, 202)
         self.assertNotIn(("verificacoes", "ABC123"), self.db.store)
+
+    def history_events(self):
+        return self.client.get("/api/reservas/ABC123/historico").json["events"]
+
+    def test_creation_is_listed_and_has_permanent_history(self):
+        data = copy.deepcopy(self.db.store["reservas", "ABC123"])
+        del self.db.store["reservas", "ABC123"]
+        response = self.client.post("/api/reservas", json=data)
+        self.assertEqual(response.status_code, 201)
+        listing = self.client.get("/api/reservas").json
+        self.assertEqual(listing[0]["historyLastType"], "created")
+        event = self.history_events()[0]
+        self.assertEqual(event["type"], "created")
+        self.assertIsNone(event["before"])
+        self.assertEqual(event["after"]["name"], data["name"])
+        self.assertNotIn("urlReserve", event["after"]["stretches"][0])
+
+    def test_recadastro_preserves_creation_date_and_old_snapshots(self):
+        data = copy.deepcopy(self.db.store["reservas", "ABC123"])
+        del self.db.store["reservas", "ABC123"]
+        self.client.post("/api/reservas", json=data)
+        created_at = self.db.store["reservas", "ABC123"]["createdAt"]
+        data["name"] = "Nome atualizado"
+        data["stretches"][0]["departureOriginal"] = "2027-05-24T18:00"
+        data["historyLastType"] = "forged"
+        self.client.post("/api/reservas", json=data)
+        events = self.history_events()
+        self.assertEqual([e["type"] for e in events], ["updated", "created"])
+        self.assertEqual(events[0]["before"]["name"], "Teste")
+        self.assertEqual(events[0]["after"]["name"], "Nome atualizado")
+        self.assertEqual(events[1]["after"]["stretches"][0]["departureOriginal"], "2027-05-23T12:55")
+        self.assertEqual(self.db.store["reservas", "ABC123"]["createdAt"], created_at)
+
+    def test_repeated_checks_preserve_each_flight_result(self):
+        token, reserve = self.start_check()
+        first = {"status": "high_priority", "segmentResults": [{"order": 1, "newDeparture": "2027-05-23T14:00"}], "lastCheckError": None}
+        self.queue.finish_check("ABC123", token, reserve, first)
+        token, reserve = self.start_check()
+        second = {**first, "segmentResults": [{"order": 1, "newDeparture": "2027-05-23T15:00"}]}
+        self.queue.finish_check("ABC123", token, reserve, second)
+        checks = [e for e in self.history_events() if e["type"] == "checked"]
+        self.assertEqual(len(checks), 2)
+        self.assertEqual(checks[0]["before"]["segmentResults"][0]["newDeparture"], "2027-05-23T14:00")
+        self.assertEqual(checks[0]["after"]["segmentResults"][0]["newDeparture"], "2027-05-23T15:00")
+        self.assertEqual(checks[1]["after"]["segmentResults"][0]["newDeparture"], "2027-05-23T14:00")
+
+    def test_manual_action_records_before_and_after_without_duplicates(self):
+        self.db.store["reservas", "ABC123"]["status"] = "high_priority"
+        self.assertEqual(self.client.patch("/api/reservas/ABC123/status", json={"status": "solved"}).status_code, 200)
+        self.assertEqual(self.client.patch("/api/reservas/ABC123/status", json={"status": "solved"}).status_code, 400)
+        self.assertEqual(self.client.patch("/api/reservas/ABC123/status", json={"status": "completed"}).status_code, 200)
+        events = self.history_events()
+        self.assertEqual(len(events), 2)
+        self.assertEqual(events[0]["before"]["status"], "solved")
+        self.assertEqual(events[0]["after"]["status"], "completed")
+        self.assertEqual(events[1]["before"]["status"], "high_priority")
+
+    def test_queue_clicks_and_stale_workers_do_not_duplicate_events(self):
+        token, reserve = self.start_check()
+        self.queue.request_check("ABC123")
+        self.assertEqual(len(self.history_events()), 1)
+        self.queue.finish_check("ABC123", token, reserve, {"status": "confirmed"})
+        self.queue.finish_check("ABC123", token, reserve, {"status": "high_priority"})
+        self.assertEqual([e["type"] for e in self.history_events()], ["checked", "check_requested"])
+
+    def test_failures_have_a_separate_history_event(self):
+        token, reserve = self.start_check()
+        self.queue.finish_check("ABC123", token, reserve, {"lastCheckError": "Companhia indisponível"})
+        event = self.history_events()[0]
+        self.assertEqual(event["type"], "check_failed")
+        self.assertEqual(event["before"]["status"], event["after"]["status"])
+        self.assertEqual(event["after"]["lastCheckError"], "Companhia indisponível")
+
+    def test_history_pagination_and_invalid_requests(self):
+        for _ in range(3):
+            token, reserve = self.start_check()
+            self.queue.finish_check("ABC123", token, reserve, {"status": "confirmed"})
+        first = self.client.get("/api/reservas/ABC123/historico?limit=2").json
+        self.assertEqual(len(first["events"]), 2)
+        second = self.client.get(f'/api/reservas/ABC123/historico?limit=2&cursor={first["nextCursor"]}').json
+        self.assertFalse(set(e["id"] for e in first["events"]) & set(e["id"] for e in second["events"]))
+        self.assertGreater(first["events"][-1]["occurredAt"], second["events"][0]["occurredAt"])
+        for query in ("limit=0", "limit=101", "limit=oops", "cursor=missing", "cursor=a/b"):
+            self.assertEqual(self.client.get(f"/api/reservas/ABC123/historico?{query}").status_code, 400)
+        self.assertEqual(self.client.get("/api/reservas/missing/historico").status_code, 404)
+
+    def test_existing_reservation_has_no_invented_history(self):
+        response = self.client.get("/api/reservas/ABC123/historico")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["events"], [])
+        self.assertIsNone(response.json["nextCursor"])
+        self.assertEqual(response.json["reserve"]["name"], "Teste")
 
 
 if __name__ == "__main__":

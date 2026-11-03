@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime
 
 from firebase_db import db
-from comparator import set_manual_status, STATUS_PENDING
+from comparator import set_manual_status
 from verification_queue import attach_jobs, request_check
+from reservation_history import get_history, save_reserve
 
 
 app = Flask(__name__)
@@ -42,11 +42,7 @@ def create_reserve():
     if not data.get("stretches"):
         return jsonify({"erro": "Informe ao menos um trecho"}), 400
 
-    # Toda reserva nova começa aguardando a primeira verificação
-    data["status"] = STATUS_PENDING
-    data["createdAt"] = datetime.now().isoformat(timespec="seconds")
-
-    db.collection("reservas").document(data["codeReserve"]).set(data)
+    save_reserve(db, data)
     return jsonify({"status": "ok", "id": data["codeReserve"]}), 201
 
 
@@ -60,6 +56,22 @@ def list_reserves():
         reserves.append(reserve)
 
     return jsonify(attach_jobs(reserves))
+
+
+@app.route("/api/reservas/<reserve_id>/historico", methods=["GET"])
+def reserve_history(reserve_id):
+    try:
+        limit = int(request.args.get("limit", 25))
+        if not 1 <= limit <= 100:
+            raise ValueError("O limite deve estar entre 1 e 100")
+        result = get_history(db, reserve_id, limit, request.args.get("cursor"))
+    except LookupError:
+        return jsonify({"erro": "Reserva não encontrada"}), 404
+    except ValueError as error:
+        return jsonify({"erro": str(error)}), 400
+    response = jsonify(result)
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 # ---------- API: comparador e ações manuais ----------
