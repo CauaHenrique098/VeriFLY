@@ -1,10 +1,12 @@
 <div id="top-menu">
     <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
+    {% if menu_show_search|default(true) %}
     <div class="navbar-search">
         <input type="search" id="{{ menu_search_id|default('menu-search') }}" data-menu-search placeholder="Pesquisar cliente ou reserva..." aria-label="Pesquisar cliente, reserva ou pasta" aria-controls="menu-search-results" aria-expanded="false" aria-autocomplete="list" role="combobox" autocomplete="off">
         <img src="../static/images/lupa.png" alt="" aria-hidden="true">
         <div id="menu-search-results" class="menu-panel search-results" role="listbox" aria-label="Resultados de pesquisa" hidden></div>
     </div>
+    {% endif %}
     <div class="navbar-actions">
         <p id="menu-user" class="menu-user">Usuário: …</p>
         <button type="button" id="menu-notifications" aria-label="Notificações" aria-expanded="false" aria-controls="menu-notification-panel">

@@ -1,7 +1,7 @@
 (() => {
     const nativeFetch = window.fetch.bind(window);
     const search = document.querySelector('[data-menu-search]');
-    if (!search) return;
+    if (!document.getElementById('top-menu')) return;
     const results = document.getElementById('menu-search-results');
     const bell = document.getElementById('menu-notifications');
     const panel = document.getElementById('menu-notification-panel');
@@ -51,6 +51,7 @@
     window.Verifly = { fetch: apiFetch, ready };
 
     function closeSearch() {
+        if (!search || !results) return;
         results.hidden = true;
         search.setAttribute('aria-expanded', 'false');
         search.removeAttribute('aria-activedescendant');
@@ -98,14 +99,14 @@
         }
     }
 
-    search.addEventListener('input', () => {
+    search?.addEventListener('input', () => {
         clearTimeout(searchTimer);
         searchVersion++;
         if (!search.value.trim()) closeSearch();
         else searchTimer = setTimeout(searchReserves, 250);
     });
-    search.addEventListener('focus', () => { if (search.value.trim()) searchReserves(); });
-    search.addEventListener('keydown', event => {
+    search?.addEventListener('focus', () => { if (search.value.trim()) searchReserves(); });
+    search?.addEventListener('keydown', event => {
         const links = Array.from(results.querySelectorAll('a'));
         if (event.key === 'Escape') {
             searchVersion++;

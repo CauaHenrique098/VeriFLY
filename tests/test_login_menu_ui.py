@@ -75,18 +75,22 @@ class LoginMenuUITests(unittest.TestCase):
         self.page.locator('#menu-user').wait_for()
         self.assertEqual(self.errors, [])
 
-    def test_search_bell_and_logout_on_all_internal_screens(self):
+    def test_search_where_available_bell_and_logout_on_all_internal_screens(self):
         self.login()
         for screen in ('dashboard', 'history', 'new_reserve'):
             self.page.goto(self.url + f'/{screen}.html')
             search = self.page.locator('[data-menu-search]')
-            search.fill('joao')
-            self.page.locator('#menu-search-results [role="option"]').wait_for()
-            self.assertIn('ABC123', self.page.locator('#menu-search-results').inner_text())
+            if screen == 'new_reserve':
+                self.assertEqual(search.count(), 0)
+            else:
+                search.fill('joao')
+                self.page.locator('#menu-search-results [role="option"]').wait_for()
+                self.assertIn('ABC123', self.page.locator('#menu-search-results').inner_text())
             self.page.locator('#menu-notifications').click()
             self.page.locator('#menu-notification-panel:not([hidden])').wait_for()
             self.assertIn('Você não tem notificações', self.page.locator('#notification-list').inner_text())
             self.page.keyboard.press('Escape')
+        self.page.goto(self.url + '/history.html')
         self.page.locator('[data-menu-search]').fill('ABC123')
         self.page.locator('#menu-search-results [role="option"]').click()
         self.page.wait_for_url('**/history.html?reserve=ABC123')
