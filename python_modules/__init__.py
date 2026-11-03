@@ -1,1 +1,1 @@
-from .search_scripts import *
+"""Módulos do VeriFly; serviços e buscadores são importados conforme necessário."""

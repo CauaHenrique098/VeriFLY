@@ -15,9 +15,9 @@ import re
 import unicodedata
 from datetime import date, datetime
 
-from firebase_db import db
+from .firebase_db import db
 from google.cloud import firestore
-from reservation_history import append_event
+from .reservation_history import append_event
 
 
 COLLECTION = "reservas"
@@ -340,7 +340,7 @@ def compare_reserve(reserve_id):
 
 def build_comparison_update(reserve):
     """Busca e compara localmente, sem gravar resultados no banco."""
-    from flight_search import search_flight
+    from .flight_search import search_flight
 
     stretches = reserve.get("stretches") or []
     reserve_url = get_reserve_url(stretches)                         # 1. URL em uma variável

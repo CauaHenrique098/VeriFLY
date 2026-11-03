@@ -15,5 +15,11 @@ if ($env:FIREBASE_SERVICE_ACCOUNT_JSON) {
     throw 'FIREBASE_SERVICE_ACCOUNT_JSON tem precedencia. Remova essa variavel deste terminal para usar a chave local.'
 }
 $env:VERIFLY_HEADLESS = if ($Headless) { '1' } else { '0' }
-& $workerPython (Join-Path $PSScriptRoot 'local_worker.py')
-exit $LASTEXITCODE
+Push-Location -LiteralPath $PSScriptRoot
+try {
+    & $workerPython -m python_modules.local_worker
+    $workerExitCode = $LASTEXITCODE
+} finally {
+    Pop-Location
+}
+exit $workerExitCode

@@ -10,6 +10,37 @@
 
 #### <p style="color: #FE731F; font-style: italic">Caso tenham qualquer dúvida quanto ao projeto, questionem no grupo.</p>
 
+## Estrutura do projeto
+
+```text
+VeriFLY/
+├── app.py                   # Entrada do servidor Flask
+├── python_modules/
+│   ├── web.py               # Aplicação Flask e rotas
+│   ├── authentication.py    # Contas e sessões
+│   ├── create_user.py       # Comando de cadastro da equipe
+│   ├── firebase_db.py       # Conexão com o Firebase
+│   ├── comparator.py        # Comparação dos voos
+│   ├── flight_search.py     # Adaptador dos buscadores
+│   ├── local_worker.py      # Execução local da fila
+│   ├── menu_services.py     # Pesquisa e notificações
+│   ├── reservation_history.py
+│   ├── verification_queue.py
+│   └── search_scripts/      # Buscadores por companhia
+├── static/                  # CSS, JavaScript e imagens
+├── templates/               # Páginas e componentes HTML
+├── tests/                   # Testes automatizados
+├── start_worker.ps1         # Atalho do worker local
+└── requirements*.txt        # Dependências do servidor e da máquina local
+```
+
+Execute os comandos abaixo na raiz do projeto. O servidor continua iniciando
+com `python app.py`, e a entrada de publicação continua sendo `app:app`.
+Os comandos administrativos agora são executados como módulos, com
+`python -m python_modules.create_user` e `python -m python_modules.local_worker`,
+conforme os exemplos das próximas seções. `start_worker.ps1` ajusta a pasta de
+execução automaticamente, inclusive quando chamado de outro diretório.
+
 ## Buscas executadas na máquina local
 
 O painel continua hospedado. O botão **Verificar voos agora** grava solicitações
@@ -24,7 +55,7 @@ segundos. LATAM continua sem buscador implementado.
 Instale `requirements.txt`, mantenha `FIREBASE_SERVICE_ACCOUNT_JSON` configurada
 com a credencial do Firebase e publique este código pelo processo de deploy do
 projeto. O servidor precisa ter acesso às coleções `reservas` e `verificacoes`.
-Não execute `local_worker.py` no servidor. O Playwright e seus navegadores são
+Não execute `python_modules.local_worker` no servidor. O Playwright e seus navegadores são
 necessários apenas na máquina local.
 
 ### Máquina local (PowerShell)
@@ -42,7 +73,7 @@ Firebase e execute:
 
 ```powershell
 $env:GOOGLE_APPLICATION_CREDENTIALS = (Resolve-Path '.\verifly-56717-firebase-adminsdk-fbsvc-3f1251030a.json').Path
-.\.venv\Scripts\python.exe local_worker.py
+.\.venv\Scripts\python.exe -m python_modules.local_worker
 ```
 
 Com a chave já presente nesta pasta, o atalho equivalente é
@@ -67,7 +98,7 @@ realizadas, nem trechos editados durante a consulta.
 Para processar apenas a fila disponível e encerrar:
 
 ```powershell
-.\.venv\Scripts\python.exe local_worker.py --once
+.\.venv\Scripts\python.exe -m python_modules.local_worker --once
 ```
 
 O intervalo de consulta pode ser ajustado com `--poll-seconds 10`. O modo contínuo
@@ -113,7 +144,7 @@ Com a credencial Firebase configurada no terminal, execute:
 
 ```powershell
 $env:GOOGLE_APPLICATION_CREDENTIALS = (Resolve-Path '.\verifly-56717-firebase-adminsdk-fbsvc-3f1251030a.json').Path
-.\.venv\Scripts\python.exe create_user.py --email 'seu-email@agencia.com.br' --name 'Seu nome'
+.\.venv\Scripts\python.exe -m python_modules.create_user --email 'seu-email@agencia.com.br' --name 'Seu nome'
 ```
 
 A senha é solicitada duas vezes, não aparece no terminal e deve ter de 12 a 256

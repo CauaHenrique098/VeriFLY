@@ -6,9 +6,9 @@ from uuid import uuid4
 from google.cloud import firestore
 from google.cloud.firestore_v1.base_query import FieldFilter
 
-from comparator import COLLECTION, COMPARABLE_STATUS, STATUS_PENDING
-from firebase_db import db
-from reservation_history import append_event
+from .comparator import COLLECTION, COMPARABLE_STATUS, STATUS_PENDING
+from .firebase_db import db
+from .reservation_history import append_event
 
 JOBS_COLLECTION = "verificacoes"
 LEASE_SECONDS = 300

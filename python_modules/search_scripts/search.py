@@ -1,8 +1,8 @@
 from playwright.sync_api import sync_playwright
 
-from block_resources import block_resources
-from azul import search_azul_viagens
-from gol import search_gol_airlines
+from .block_resources import block_resources
+from .azul import search_azul_viagens
+from .gol import search_gol_airlines
 
 import json
 

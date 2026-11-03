@@ -10,9 +10,9 @@ logger = logging.getLogger("verifly.worker")
 
 
 def process_check(reserve_id, token):
-    from comparator import COLLECTION, COMPARABLE_STATUS, STATUS_PENDING, build_comparison_update
-    from firebase_db import db
-    from verification_queue import finish_check, renew_lease
+    from .comparator import COLLECTION, COMPARABLE_STATUS, STATUS_PENDING, build_comparison_update
+    from .firebase_db import db
+    from .verification_queue import finish_check, renew_lease
 
     stopped = threading.Event()
 
@@ -58,7 +58,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     # O navegador fica visível na máquina local; VERIFLY_HEADLESS=1 o oculta.
     os.environ.setdefault("VERIFLY_HEADLESS", "0")
-    from verification_queue import claim_next
+    from .verification_queue import claim_next
 
     logger.info("Worker local ativo. Aguardando verificações do painel. Ctrl+C para encerrar.")
     try:

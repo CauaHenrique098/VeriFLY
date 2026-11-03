@@ -17,7 +17,7 @@ class AuthMenuTests(unittest.TestCase):
         cls.app_module = verification_tests.LocalVerificationTests.app_module
         cls.queue = verification_tests.LocalVerificationTests.queue
         cls.comparator = verification_tests.LocalVerificationTests.comparator
-        from authentication import digest
+        from python_modules.authentication import digest
         cls.user_id = digest("equipe@example.test")
         cls.password = "Senha-forte-12345"
         cls.password_hash = generate_password_hash(cls.password)
@@ -94,7 +94,7 @@ class AuthMenuTests(unittest.TestCase):
         self.assertEqual(self.client.post("/api/reservas/ABC123/comparar").status_code, 403)
 
     def test_logout_revokes_the_cookie_even_when_replayed(self):
-        from authentication import SESSION_COOKIE
+        from python_modules.authentication import SESSION_COOKIE
         self.login()
         token = self.client.get_cookie(SESSION_COOKIE).value
         self.assertEqual(self.client.post("/api/auth/logout").status_code, 200)
@@ -103,7 +103,7 @@ class AuthMenuTests(unittest.TestCase):
         self.assertEqual(self.client.get("/api/auth/me").status_code, 401)
 
     def test_expired_and_disabled_sessions_stop_working(self):
-        from authentication import SESSION_COOKIE, digest
+        from python_modules.authentication import SESSION_COOKIE, digest
         self.login()
         token = self.client.get_cookie(SESSION_COOKIE).value
         record = self.db.store["sessoes", digest(token)]
@@ -114,7 +114,7 @@ class AuthMenuTests(unittest.TestCase):
         self.assertEqual(self.client.get("/api/reservas").status_code, 401)
 
     def test_attempt_limit_expires(self):
-        from authentication import digest, ATTEMPT_WINDOW
+        from python_modules.authentication import digest, ATTEMPT_WINDOW
         for _ in range(5):
             self.assertEqual(self.login(password="errada").status_code, 401)
         self.assertEqual(self.login().status_code, 429)
@@ -122,7 +122,7 @@ class AuthMenuTests(unittest.TestCase):
         self.assertEqual(self.login().status_code, 200)
 
     def test_user_creation_and_reset_use_hashes_and_revoke_old_sessions(self):
-        from authentication import create_user, digest
+        from python_modules.authentication import create_user, digest
         created = create_user(self.db, "novo@example.test", "Novo", "Outra-senha-forte-12")
         stored = self.db.store["usuarios", created["id"]]
         self.assertNotEqual(stored["passwordHash"], "Outra-senha-forte-12")
@@ -161,7 +161,7 @@ class AuthMenuTests(unittest.TestCase):
         self.client.post("/api/auth/logout")
         self.login()
         self.assertEqual(self.client.get("/api/notificacoes").json["unreadCount"], 0)
-        from menu_services import list_notifications
+        from python_modules.menu_services import list_notifications
         self.assertEqual(list_notifications(self.db, "outro-usuario")["unreadCount"], 1)
 
     def test_existing_alerts_are_visible_and_repeated_results_do_not_duplicate(self):
@@ -169,7 +169,7 @@ class AuthMenuTests(unittest.TestCase):
         reserve = self.db.store["reservas", "ABC123"]
         reserve.update(status="high_priority", lastCheck="2026-11-02T12:00:00")
         self.assertEqual(self.client.get("/api/notificacoes").json["unreadCount"], 1)
-        from reservation_history import append_event
+        from python_modules.reservation_history import append_event
         ref = self.db.collection("reservas").document("ABC123")
         after = {**reserve, "segmentResults": [{"newDeparture": "2027-05-23T15:00"}]}
         append_event(self.db, self.db.transaction(), ref, "checked", reserve, after)

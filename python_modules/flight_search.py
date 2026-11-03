@@ -22,43 +22,18 @@ Variável de ambiente opcional:
 """
 
 import os
-import sys
 import inspect
 
 from playwright.sync_api import sync_playwright
 
 HEADLESS = os.environ.get("VERIFLY_HEADLESS", "1") != "0"
 
-# Pastas onde podem estar block_resources.py e as pastas azul/ e gol/
-# (relativas à pasta deste arquivo). A primeira que tiver a pasta "azul" é usada.
-SCRAPER_FOLDERS = (
-    ".",
-    "python_modules",
-    os.path.join("python_modules", "search_scripts"),
-)
-
 
 def _load_scrapers():
-    """Importa os buscadores sem depender de qual pasta eles estão."""
-
-    base = os.path.dirname(os.path.abspath(__file__))
-
-    for folder in SCRAPER_FOLDERS:
-        path = os.path.normpath(os.path.join(base, folder))
-
-        if os.path.isdir(os.path.join(path, "azul")) and os.path.isdir(os.path.join(path, "gol")):
-            if path not in sys.path:
-                sys.path.insert(0, path)
-            break
-    else:
-        raise ImportError(
-            "Não encontrei as pastas 'azul' e 'gol' dos buscadores. "
-            "Ajuste SCRAPER_FOLDERS em flight_search.py."
-        )
-
-    from block_resources import block_resources
-    from azul import search_azul_viagens
-    from gol import search_gol_airlines
+    """Importa os buscadores do pacote, sem alterar os caminhos do Python."""
+    from .search_scripts.block_resources import block_resources
+    from .search_scripts.azul import search_azul_viagens
+    from .search_scripts.gol import search_gol_airlines
 
     return block_resources, {
         "azul": search_azul_viagens,

@@ -9,6 +9,7 @@ from datetime import timedelta
 from unittest.mock import patch
 from uuid import uuid4
 import time
+from pathlib import Path
 
 
 class Snapshot:
@@ -109,7 +110,7 @@ class Database:
 
 
 def authorize_client(db, client):
-    from authentication import SESSION_COOKIE, digest
+    from python_modules.authentication import SESSION_COOKIE, digest
     db.store["usuarios", "test-user"] = {"email": "equipe@example.test", "name": "Equipe", "enabled": True, "passwordVersion": "v1"}
     db.store["sessoes", digest("test-session")] = {
         "userId": "test-user", "csrfToken": "test-csrf", "passwordVersion": "v1", "expiresAt": time.time() + 3600,
@@ -122,18 +123,18 @@ class LocalVerificationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Importar o servidor também deve funcionar sem o Playwright instalado.
-        firebase_stub = types.ModuleType("firebase_db")
+        firebase_stub = types.ModuleType("python_modules.firebase_db")
         firebase_stub.db = Database()
-        previous_firebase = sys.modules.get("firebase_db")
+        previous_firebase = sys.modules.get("python_modules.firebase_db")
         previous_playwright = sys.modules.get("playwright")
-        sys.modules["firebase_db"] = firebase_stub
+        sys.modules["python_modules.firebase_db"] = firebase_stub
         sys.modules["playwright"] = None
         try:
-            cls.queue = importlib.import_module("verification_queue")
-            cls.app_module = importlib.import_module("app")
-            cls.comparator = importlib.import_module("comparator")
+            cls.queue = importlib.import_module("python_modules.verification_queue")
+            cls.app_module = importlib.import_module("python_modules.web")
+            cls.comparator = importlib.import_module("python_modules.comparator")
         finally:
-            for name, previous in (("firebase_db", previous_firebase), ("playwright", previous_playwright)):
+            for name, previous in (("python_modules.firebase_db", previous_firebase), ("playwright", previous_playwright)):
                 if previous is None:
                     sys.modules.pop(name, None)
                 else:
@@ -161,8 +162,18 @@ class LocalVerificationTests(unittest.TestCase):
         claim = self.queue.claim_next()
         return claim[1], copy.deepcopy(self.db.store["reservas", "ABC123"])
 
+    def test_entrypoint_keeps_deployment_and_asset_paths(self):
+        entrypoint = importlib.import_module("app")
+        self.assertIs(entrypoint.app, self.app_module.app)
+        root = Path(__file__).resolve().parents[1]
+        self.assertEqual(Path(entrypoint.app.template_folder), root / "templates")
+        self.assertEqual(Path(entrypoint.app.static_folder), root / "static")
+        with self.client.get("/static/css/variables.css") as response:
+            self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.client.get("/dashboard.html").status_code, 200)
+
     def test_api_enqueues_without_importing_or_running_playwright(self):
-        with patch.dict(sys.modules, {"playwright": None, "flight_search": None}):
+        with patch.dict(sys.modules, {"playwright": None, "python_modules.flight_search": None}):
             response = self.client.post("/api/reservas/ABC123/comparar")
         self.assertEqual(response.status_code, 202)
         self.assertEqual(response.json["verification"]["state"], "queued")
@@ -217,9 +228,9 @@ class LocalVerificationTests(unittest.TestCase):
 
     def test_failed_search_preserves_reserve_status(self):
         token, reserve = self.start_check()
-        search = types.ModuleType("flight_search")
+        search = types.ModuleType("python_modules.flight_search")
         search.search_flight = lambda *args: {"outbound_flight_infos": {"origin": {"date": None}}}
-        with patch.dict(sys.modules, {"flight_search": search}):
+        with patch.dict(sys.modules, {"python_modules.flight_search": search}):
             update = self.comparator.build_comparison_update(reserve)
         self.queue.finish_check("ABC123", token, reserve, update)
         self.assertEqual(self.db.store["reservas", "ABC123"]["status"], "pending")
@@ -228,15 +239,15 @@ class LocalVerificationTests(unittest.TestCase):
 
     def test_local_worker_searches_and_publishes(self):
         token, _ = self.start_check()
-        search = types.ModuleType("flight_search")
+        search = types.ModuleType("python_modules.flight_search")
         search.search_flight = lambda *args: {"outbound_flight_infos": {
             "origin": {"airport": "UDI", "date": "23/05/2027", "hour": "12:55"},
             "destiny": {"airport": "MCZ", "date": "23/05/2027", "hour": "15:30"},
         }}
-        firebase_stub = types.ModuleType("firebase_db")
+        firebase_stub = types.ModuleType("python_modules.firebase_db")
         firebase_stub.db = self.db
-        with patch.dict(sys.modules, {"firebase_db": firebase_stub, "flight_search": search}):
-            import local_worker
+        with patch.dict(sys.modules, {"python_modules.firebase_db": firebase_stub, "python_modules.flight_search": search}):
+            from python_modules import local_worker
             local_worker.process_check("ABC123", token)
         self.assertEqual(self.db.store["reservas", "ABC123"]["status"], "confirmed")
         self.assertEqual(self.db.store["verificacoes", "ABC123"]["state"], "done")

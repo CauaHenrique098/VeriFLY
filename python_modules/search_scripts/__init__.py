@@ -1,2 +1,1 @@
-from .search import *
-from .block_resources import *
+"""Buscadores de voos executados pelo worker local."""

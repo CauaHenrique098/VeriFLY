@@ -3,7 +3,7 @@
 import argparse
 from getpass import getpass
 
-from authentication import create_user
+from .authentication import create_user
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     password = getpass("Senha (mínimo de 12 caracteres): ")
     if password != getpass("Confirme a senha: "):
         parser.error("As senhas não coincidem")
-    from firebase_db import db
+    from .firebase_db import db
     try:
         user = create_user(db, args.email, args.name, password, reset=args.reset_password)
     except ValueError as error:
