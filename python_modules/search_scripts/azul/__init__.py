@@ -1,1 +1,1 @@
-from azul.search_flights_azul import *
+from .search_flights_azul import *

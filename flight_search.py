@@ -55,8 +55,8 @@ def _search_azul(url):
     # AJUSTE AQUI se necessário: pasta onde ficam block_resources.py e a pasta azul/
     sys.path.append(os.path.join(os.path.dirname(__file__), "python_modules"))
 
-    from block_resources import block_resources
-    from azul import search_azul_viagens
+    from python_modules import block_resources
+    from python_modules import search_azul_viagens
 
     with sync_playwright() as pw:
         # headless=True porque o Codespace não tem tela (o search.py usa False)
