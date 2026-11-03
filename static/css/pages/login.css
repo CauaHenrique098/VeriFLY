@@ -207,6 +207,18 @@ body {
     background-color: #e05500;
 }
 
+.btn-submit:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+
+#login-feedback {
+    margin-bottom: 16px;
+    color: var(--text-error, #EA2427);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
 
 .card-footer {
     margin-top: 24px;

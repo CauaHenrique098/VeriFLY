@@ -35,12 +35,13 @@ function createRemoveButton() {
 function addSegment() {
     const clone = segmentsList.querySelector('.segment').cloneNode(true);
 
-    clone.querySelectorAll('input').forEach(input => input.value = '');
+    clone.querySelectorAll('input').forEach(input => {
+        input.value = '';
+        input.setCustomValidity('');
+    });
     clone.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
 
-    if (!clone.querySelector('.btn-remove-segment')) {
-        clone.querySelector('.segment-top').appendChild(createRemoveButton());
-    }
+    clone.querySelector('.segment-top').appendChild(createRemoveButton());
 
     segmentsList.appendChild(clone);
     updateSegments();
@@ -65,47 +66,41 @@ segmentsList.addEventListener('click', (event) => {
 });
 
 
-/* ---------- Coleta e Validação dos dados do formulário ---------- */
+/* ---------- Validação: chegada não pode ser antes da partida ---------- */
 
-function getSegmentsData() {
-    return Array.from(segmentsList.querySelectorAll('.segment')).map((segment, index) => {
-        const departureDate = segment.querySelector('[name="departure_date"]').value.trim();
-        const departureHour = segment.querySelector('[name="departure_hour"]').value.trim();
-        const arrivalDate = segment.querySelector('[name="arrival_date"]').value.trim();
-        const arrivalHour = segment.querySelector('[name="arrival_hour"]').value.trim();
+function validateDates(segment) {
+    const departure = segment.querySelector('[name="departure_date"]');
+    const arrival = segment.querySelector('[name="arrival_date"]');
 
-        return {
-            order: index + 1,
-            origin: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
-            destination: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
-            type: segment.querySelector('[name="type"]').value,
-            departureOriginal: departureDate,
-            departureHourOriginal: departureHour,
-            arrivalOriginal: arrivalDate,
-            arrivalHourOriginal: arrivalHour,
-            company: segment.querySelector('[name="airline"]').value,
-            urlReserve: segment.querySelector('[name="reserve_url"]').value.trim(),
-            status: 'confirmed'
-        };
-    });
+    // datetime-local ('2026-10-07T13:30') pode ser comparado como texto
+    if (departure.value && arrival.value && arrival.value < departure.value) {
+        arrival.setCustomValidity('A chegada não pode ser antes da partida.');
+    } else {
+        arrival.setCustomValidity('');
+    }
 }
 
-function validateSegmentsSchedule(stretches) {
-    for (const stretch of stretches) {
-        if (!stretch.departureHourOriginal || !stretch.arrivalHourOriginal) {
-            alert(`Preencha os horários de partida e chegada do Trecho ${stretch.order}.`);
-            return false;
-        }
-
-        const depDateTime = new Date(`${stretch.departureOriginal}T${stretch.departureHourOriginal}`);
-        const arrDateTime = new Date(`${stretch.arrivalOriginal}T${stretch.arrivalHourOriginal}`);
-
-        if (arrDateTime < depDateTime) {
-            alert(`No Trecho ${stretch.order}, a data/horário de chegada não pode ser anterior à data/horário de partida.`);
-            return false;
-        }
+// Funciona também nos trechos adicionados depois (delegação de eventos)
+segmentsList.addEventListener('input', (event) => {
+    if (event.target.matches('[name="departure_date"], [name="arrival_date"]')) {
+        validateDates(event.target.closest('.segment'));
     }
-    return true;
+});
+
+
+/* ---------- Coleta dos dados do formulário ---------- */
+
+function getSegmentsData() {
+    return Array.from(segmentsList.querySelectorAll('.segment')).map((segment, index) => ({
+        order: index + 1,
+        origin: segment.querySelector('[name="origin"]').value.trim().toUpperCase(),
+        destination: segment.querySelector('[name="destination"]').value.trim().toUpperCase(),
+        type: segment.querySelector('[name="type"]').value,
+        departureOriginal: segment.querySelector('[name="departure_date"]').value, // '2026-10-07T13:30'
+        arrivalOriginal: segment.querySelector('[name="arrival_date"]').value,     // '2026-10-07T16:50'
+        company: segment.querySelector('[name="airline"]').value,
+        urlReserve: segment.querySelector('[name="reserve_url"]').value.trim()
+    }));
 }
 
 function getReserveData() {
@@ -126,15 +121,11 @@ form.addEventListener('submit', async (event) => {
 
     const reserveData = getReserveData();
 
-    if (!validateSegmentsSchedule(reserveData.stretches)) {
-        return;
-    }
-
     btnRegister.disabled = true;
     btnRegister.textContent = 'Cadastrando...';
 
     try {
-        const response = await fetch(API_URL, {
+        const response = await window.Verifly.fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(reserveData)

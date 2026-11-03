@@ -12,7 +12,8 @@
         <link rel="icon" type="image/x-icon" href="../static/images/favicon.ico">
         
         <title>Verifly - Dashboard</title>
-    </head>
+        <link rel="stylesheet" href="../static/css/components/top_menu.css">
+</head>
 
 <body>
     <div id="app-container">
@@ -26,24 +27,7 @@
             </nav>
         </div>
 
-        <div id="top-menu">
-            <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
-
-            <div class="navbar-search">
-                <input type="text" placeholder="Pesquisar cliente ou reserva...">
-                <img src="../static/images/lupa.png">
-            </div>
-
-            <div class="navbar-actions">
-                <p style="font-size: 15px;">Usuário: Administrador</p>
-                <img src="../static/images/notification.png">
-                <div>
-                    <button><img src="../static/images/sair.png"></button>
-                </div>
-            </div>
-        </div>
-
-
+        {% include "_top_menu.html" %}
 
         <main id="page-content">
 
@@ -109,7 +93,14 @@
             <div class="monitoring-panel">
                 <div class="panel-top">
                     <h3>Painel Geral de Monitoramento</h3>
-                    <span class="filter-label" id="filter-label"></span>
+                    <div class="panel-filters" id="panel-filters">
+                        <button type="button" class="filter-chip active" data-chip="">Todas</button>
+                        <button type="button" class="filter-chip" data-chip="high_priority">Alta prioridade</button>
+                        <button type="button" class="filter-chip" data-chip="low_priority">Baixa prioridade</button>
+                        <button type="button" class="filter-chip" data-chip="confirmed">Confirmados</button>
+                        <button type="button" class="filter-chip" data-chip="solved">Resolvidos</button>
+                        <button type="button" class="filter-chip" data-chip="completed">Realizados</button>
+                    </div>
                     <button type="button" class="btn-check-all" id="btn-check-all">Verificar voos agora</button>
                 </div>
 
@@ -142,6 +133,7 @@
         </main>
     </div>
 
+    <script src="../static/scripts/top_menu.js"></script>
     <script src="../static/scripts/dashboard.js"></script>
 </body>
 

@@ -1,15 +1,14 @@
 from playwright.sync_api import sync_playwright
 
-from block_resources import block_resources
-from azul import search_azul_viagens
-from gol import search_gol_airlines
+from .block_resources import block_resources
+from .azul import search_azul_viagens
+from .gol import search_gol_airlines
 
 import json
 
-reserve_to_verifier = [] #URL do banco de dados para conferir
 verified_flights = []
 
-def main(reserve):
+def search_flights_in_company(reserve):
 
     with sync_playwright() as pw:
 
@@ -20,12 +19,8 @@ def main(reserve):
         context.route("**/*", block_resources)
 
         
-        verified_flights.append(search_gol_airlines(context, reserve))
+        verified_flights.append(search_azul_viagens(context, reserve))
         
         browser.close()
 
-        print("\n finalizado!!")
-
-
-if __name__ == "__main__":
-    main(reserve_to_verifier)
+        print(f"\n{verified_flights} \n finalizado!!")
