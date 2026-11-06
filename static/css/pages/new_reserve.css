@@ -1,15 +1,8 @@
-#left-menu {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    align-self: start;
-}
-
 #page-content {
 
     #new-reserve-form {
         width: 100%;
-        max-width: 900px;
+        max-width: 80%;
         margin: 40px auto;
         display: flex;
         flex-direction: column;
@@ -201,17 +194,68 @@
     }
 }
 
-@media (max-width: 900px) {
-    #page-content #new-reserve-form {
+@media screen and (min-width: 2100px) {
+    #page-content {
+        .form-card {
+            min-width: 100%;
 
-        .identification-grid,
-        .segment-row-flight,
-        .segment-row-airline {
-            grid-template-columns: 1fr;
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .identification-grid {
+                label {
+                    font-size: 1.2rem;
+                }
+
+                input {
+                    height: 60px !important;
+                    font-size: 1rem;
+                }
+            }
         }
 
-        .folder-group {
-            max-width: none;
+        .itinerary-top {
+            .btn-add-segment {
+                font-size: 1.5rem !important;
+            }
+        }
+
+        #segments-list {
+            .segment {
+                .segment-top {
+                    span {
+                        font-size: 1.5rem;
+                    }
+                }
+
+                .segment-row-flight {
+                    margin-bottom: 50px;
+                }
+
+                label {
+                    font-size: 1.2rem;
+                }
+
+                select {
+                    font-size: 1rem;
+                }
+
+                input {
+                    height: 60px !important;
+                    font-size: 1rem;
+                }
+            }
+        }
+
+        .form-actions {
+            button {
+                font-size: 1.3rem !important;
+            }
+
+            small {
+                font-size: 1rem;
+            }
         }
     }
 }

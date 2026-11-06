@@ -8,15 +8,13 @@
 }
 
 #app-container {
-    display: grid;
     grid-template-columns: 15rem 1fr;
-    grid-template-rows: 3rem 1fr;
-
-    min-height: 100vh;
-
+    grid-template-rows: auto 1fr;
+    display: grid;
     background-color: var(--color-white);
 
     #left-menu {
+        min-height: 100vh;
         width: 100%;
         height: 100%;
         background-color: var(--color-dark-blue);
@@ -59,15 +57,12 @@
         }
     }
 
-
     #top-menu {
         display: flex;
         justify-content: space-between;
-
         align-items: center;
         background-color: var(--color-dark-blue);
         padding: 0 30px;
-
         color: var(--color-white);
         font-size: 14px;
         font-weight: bold;
@@ -115,30 +110,69 @@
                     justify-content: center;
                 }
             }
+        }
+    }
+}
 
-            div {
-                border: var(--color-dark-gray) solid 1px;
-                display: flex;
-                align-items: center;
-                gap: 5px;
+@media screen and (min-width: 2100px) {
+    #app-container {
+        grid-template-columns: 20rem minmax(0, 1fr);
+        grid-template-rows: auto 1fr;
+    }
+
+    #left-menu {
+        .main-logo {
+            width: 250px !important;
+        }
+
+        a {
+            font-size: 1.75rem !important;
+            height: 80px !important;
+
+            img {
+                width: 35px !important;
+                height: 35px !important;
             }
+        }
+    }
 
-            nav {
-                .logout-btn {
-                    border: 1px solid var(--color-white);
-                    border-radius: 4px;
-                    padding: 6px 12px;
-                    font-size: 12px;
-                }
+    #top-menu {
+        min-height: 100px !important;
+
+        p:first-child {
+            font-size: 1.5rem !important;
+        }
+
+        .navbar-search {
+            max-width: 500px !important;
+            min-height: 40px !important;
+
+            input {
+                font-size: 1.5rem !important;
             }
         }
 
+        .navbar-actions {
+            img {
+                width: 30px !important;
+                height: 30px !important;
+            }
+        }
 
-    }
+        .notifications-panel {
+            h2 {
+                font-size: 1.3rem !important;
+            }
 
-    /* Estilos do menu estão acima */
+            button {
+                font-size: 1.2rem !important;
+            }
+        }
 
-    #page-content {
-        /* Estilos do conteúdo principal devem ser desenvolvidos aqui */
+        .menu-panel {
+            p {
+                font-size: 1.75rem !important;
+            }
+        }
     }
 }
