@@ -32,32 +32,8 @@
             </nav>
         </div>
 
-        <div id="top-menu">
-            <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
-            <div class="navbar-actions">
-                <button id="open-left-menu"><img src="../static/images/hamburguer.png"></button>
-                <p id="menu-user" class="menu-user">Usuário: …</p>
-                <button type="button" id="menu-notifications" aria-label="Notificações" aria-expanded="false"
-                    aria-controls="menu-notification-panel">
-                    <img src="../static/images/notification.png" alt="">
-                    <span id="notification-count" hidden>0</span>
-                </button>
-                <button type="button" id="menu-logout" aria-label="Sair e voltar ao login" title="Sair">
-                    <img src="../static/images/sair.png" alt="">
-                </button>
-            </div>
-            <section id="menu-notification-panel" class="menu-panel notifications-panel"
-                aria-labelledby="notification-heading" hidden>
-                <header>
-                    <h2 id="notification-heading">Notificações</h2>
-                    <button type="button" id="notifications-read-all">Marcar como lidas</button>
-                </header>
-                <p class="notification-description">Últimas 50 movimentações e alertas de reservas.</p>
-                <div id="notification-list" aria-live="polite"></div>
-                <p id="notification-feedback" role="status"></p>
-            </section>
-            <p id="menu-feedback" role="status" hidden></p>
-        </div>
+        {% set menu_show_search = false %}
+        {% include "_top_menu.html" %}
 
         <main id="page-content">
 
