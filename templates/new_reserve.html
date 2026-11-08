@@ -23,6 +23,7 @@
     <div id="app-container">
 
         <div id="left-menu">
+            <button id="close-left-menu"><img src="../static/images/x-button.png"></button>
             <img src="../static/images/logo_verifly_bg_blue.jpg" class="main-logo">
             <nav>
                 <a href="dashboard.html"><img src="../static/images/dashboard.png">Dashboard</a>
@@ -31,8 +32,32 @@
             </nav>
         </div>
 
-        {% set menu_show_search = false %}
-        {% include "_top_menu.html" %}
+        <div id="top-menu">
+            <p>VERIFLY - SISTEMA DE MONITORAMENTO DE VOOS</p>
+            <div class="navbar-actions">
+                <button id="open-left-menu"><img src="../static/images/hamburguer.png"></button>
+                <p id="menu-user" class="menu-user">Usuário: …</p>
+                <button type="button" id="menu-notifications" aria-label="Notificações" aria-expanded="false"
+                    aria-controls="menu-notification-panel">
+                    <img src="../static/images/notification.png" alt="">
+                    <span id="notification-count" hidden>0</span>
+                </button>
+                <button type="button" id="menu-logout" aria-label="Sair e voltar ao login" title="Sair">
+                    <img src="../static/images/sair.png" alt="">
+                </button>
+            </div>
+            <section id="menu-notification-panel" class="menu-panel notifications-panel"
+                aria-labelledby="notification-heading" hidden>
+                <header>
+                    <h2 id="notification-heading">Notificações</h2>
+                    <button type="button" id="notifications-read-all">Marcar como lidas</button>
+                </header>
+                <p class="notification-description">Últimas 50 movimentações e alertas de reservas.</p>
+                <div id="notification-list" aria-live="polite"></div>
+                <p id="notification-feedback" role="status"></p>
+            </section>
+            <p id="menu-feedback" role="status" hidden></p>
+        </div>
 
         <main id="page-content">
 
@@ -142,6 +167,7 @@
 
     <script src="../static/scripts/top_menu.js"></script>
     <script src="../static/scripts/new_reserve.js"></script>
+    <script src="../static/scripts/open-close-LeftMenu.js"></script>
 </body>
 
 </html>
