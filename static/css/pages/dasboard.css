@@ -174,7 +174,6 @@
             font-weight: 600;
             text-align: center;
             padding: 12px;
-            border-bottom: 2px solid #EBF0F4;
         }
 
         tbody tr.reserve-row {
@@ -482,6 +481,61 @@
 
         th {
             font-size: 1rem !important;
+        }
+    }
+}
+
+
+@media screen and (max-width: 600px) {
+    .cards-area {
+        flex-direction: column;
+        margin: 10px auto !important;
+
+        a {
+            text-decoration: none;
+            min-width: 100%;
+            min-height: 100%;
+        }
+    }
+
+    .monitoring-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        border-collapse: collapse;
+        -webkit-overflow-scrolling: touch;
+
+        tr {
+            display: flex;
+            width: max-content;
+            min-width: 100%;
+        }
+
+        th {
+            border: 5px !important;
+            padding: 10px !important;
+            font-size: 0.5rem !important;
+        }
+    }
+
+    .monitoring-table thead,
+    .monitoring-table tbody {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    .monitoring-table th,
+    .monitoring-table td {
+        padding: 12px;
+        white-space: nowrap;
+        flex: 1 0 auto;
+    }
+
+    #monitoring-body {
+        .empty-row {
+            text-align: center;
+            font-size: 0.5rem;
         }
     }
 }
