@@ -454,7 +454,7 @@
     }
 }
 
-@media screen and (min-width: 2100px) {
+@media screen and (min-width: 1950px) {
     .card-value {
         font-size: 3.5rem !important;
     }
