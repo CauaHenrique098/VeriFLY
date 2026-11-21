@@ -12,6 +12,10 @@
 
 ## Estrutura do projeto
 
+O manual [VeriFLY - Lógica do Projeto](<VeriFLY - Lógica do Projeto.md>) detalha a
+arquitetura, o Firestore, as APIs, o comparador, a automação, a sincronização das
+telas e o ciclo de vida do worker local.
+
 ```text
 VeriFLY/
 ├── app.py                   # Entrada do servidor Flask
@@ -110,6 +114,54 @@ O intervalo de consulta pode ser ajustado com `--poll-seconds 10`. O modo contí
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 node --check static/scripts/dashboard.js
 ```
+
+## Regras de segurança do Firestore
+
+As regras estão em [firestore.rules](firestore.rules), com o caminho configurado
+em [firebase.json](firebase.json). Elas bloqueiam todas as leituras e escritas
+diretas de clientes web/mobile, incluindo subcoleções e usuários autenticados
+no Firebase, sem data de expiração.
+
+O navegador do VeriFLY chama a API Flask. O servidor, o worker e o comando de
+cadastro de usuários acessam o banco pelo Firebase Admin SDK, autenticado com a
+conta de serviço. Esses acessos são autorizados pelo IAM e não passam pelas
+Security Rules. Por isso, o bloqueio é compatível com a arquitetura atual.
+O login e a autorização da API continuam sendo responsabilidade do Flask;
+a sessão do VeriFLY não corresponde a `request.auth` do Firebase.
+As credenciais administrativas devem permanecer no servidor e na máquina do
+worker, fora dos arquivos públicos e dos commits.
+
+A expiração da regra do modo de testes bloqueia requisições de clientes;
+ela não exclui o banco nem seus documentos. Salvar os arquivos neste repositório
+também não publica as regras automaticamente.
+
+Para publicar pelo console:
+
+1. Abra o projeto Firebase usado pelo painel e pelo worker e acesse
+   **Firestore Database → Regras** no banco `(default)`.
+2. Substitua todo o conteúdo do editor pelo conteúdo de `firestore.rules`.
+   Remova a regra antiga que permite acesso até uma data.
+3. No simulador de regras, teste leitura, criação, atualização e exclusão em
+   `reservas/EXEMPLO`, `reservas/EXEMPLO/historico/evento`, `usuarios/EXEMPLO`
+   e `sessoes/EXEMPLO`. O resultado deve ser negado tanto sem autenticação
+   quanto com um UID simulado. O simulador não altera os documentos reais.
+4. Clique em **Publicar**. Depois da propagação, confirme o login, a listagem
+   de reservas e o funcionamento normal do worker pelo VeriFLY.
+
+Como alternativa, com a Firebase CLI instalada e autenticada em uma conta
+autorizada no projeto, publique apenas as regras pela raiz do repositório:
+
+```powershell
+firebase deploy --only firestore:rules --project verifly-56717
+```
+
+Se houver falha de permissão no Python, confira a credencial e as permissões IAM
+da conta de serviço. Abrir as Security Rules não corrige permissões do Admin SDK.
+Se futuramente o navegador acessar o Firestore diretamente, será necessário
+revisar esta política junto com a autenticação e a autorização por usuário.
+
+Referências: [acesso fechado com Admin SDK](https://firebase.google.com/docs/firestore/security/insecure-rules#closed_access)
+e [publicação de regras](https://firebase.google.com/docs/rules/manage-deploy).
 
 ## Histórico de reservas
 
